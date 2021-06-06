@@ -15,6 +15,11 @@ public interface DataProviderInterface {
 	// retourne un tableau de taille nbIntervals contenant l'espèce et ses signalements par région pour chaque intervalle (exemple : l'élément 3 du tableau contient les signalements de l'espèce pour le 3ème pas de temps)
 	public ArrayList<Species> getNbReportsByZoneByTimeInterval(String scientificName, String geoHash, Date from, int timeInterval, int nbIntervals);
 	
+	/**
+	 * Récupére les premiers noms des espèces commençant par une chaîne de caractères passée en paramètre
+	 * @param beginWith : le début du nom de l'espèce
+	 * @return : la liste des noms d'espèces correspondant
+	 */
 	public ArrayList<String> getScientificNamesBeginWith(String beginWith);
 
 	public String GPStoHash(Point2D CoordGPS);

@@ -43,4 +43,18 @@ public class URLBuilder {
 	public String getUrl() {
 		return url.toString();
 	}
+
+	/**
+	 * Encode la chaine de charactères transmise en paramètre
+	 * @param str : la chaine de charactères à encoder
+	 * @return : la chaine de charactères encodée
+	 */
+	public static String encode(String str) {
+		try {
+			return URLEncoder.encode(str, StandardCharsets.UTF_8.toString());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
