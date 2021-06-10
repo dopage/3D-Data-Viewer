@@ -107,26 +107,119 @@ public class DataProvider implements DataProviderInterface {
 
 	@Override
 	public Species getDetailsRecords(String geoHash, String scientificName) {
-		// TODO Auto-generated method stub
-		return null;
+		return getDetailsRecords(geoHash, scientificName, null, null);
 	}
 
 	@Override
 	public Species getDetailsRecords(String geoHash, String scientificName, Date from, Date to) {
-		// TODO Auto-generated method stub
-		return null;
+		Species species = new Species();
+		int minOccurence = 0;
+		int maxOccurence = 0;
+		URLBuilder url = new URLBuilder("https://api.obis.org/v3/occurrence?");
+		url.addParameter("geometry", geoHash);
+		if (scientificName != null) {
+			url.addParameter("scientificname", scientificName);
+			species.setScientificName(scientificName);
+		}
+		if (from != null && to != null) {
+			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			url.addParameter("startdate=", formatter.format(from));
+			url.addParameter("&enddate=", formatter.format(to));
+		}
+		try {
+			JSONObject jsonRoot = new JSONObject(JSONHelper.readJsonFromUrl(url.getUrl()));
+			JSONArray listeDesRecords = jsonRoot.getJSONArray("results");
+			System.out.println("nb records : " + listeDesRecords.length());
+			for (int i = 0; i < listeDesRecords.length(); i++) {
+				JSONObject recordJSON = listeDesRecords.getJSONObject(i);
+				if (i == 0) {
+					if (!recordJSON.isNull("order"))
+						species.setOrder(recordJSON.getString("order"));
+					if (!recordJSON.isNull("species"))
+						species.setSpeciesName(recordJSON.getString("species"));
+					if (!recordJSON.isNull("superclass"))
+						species.setSuperClass(recordJSON.getString("superclass"));
+				}
+				String recordedBy = null;
+				if (!recordJSON.isNull("recordedBy"))
+					recordedBy = recordJSON.getString("recordedBy");
+				Record record = new Record(recordedBy);
+				species.addRecord(record);
+			}
+			species.setMinOccurrence(minOccurence);
+			species.setMaxOccurrence(maxOccurence);
+		}
+		catch (JSONException e) {
+			System.err.println("Erreur dans le json - getDetailsRecords()");
+			//e.printStackTrace();
+		}
+		return species;
 	}
 
 	@Override
 	public ArrayList<Species> getDetailsRecords(String geoHash) {
-		// TODO Auto-generated method stub
-		return null;
+		return getDetailsRecords(geoHash, null, null);
 	}
 
 	@Override
 	public ArrayList<Species> getDetailsRecords(String geoHash, Date from, Date to) {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Species> species = new ArrayList<Species>();
+		URLBuilder url = new URLBuilder("https://api.obis.org/v3/occurrence?");
+		url.addParameter("geometry", geoHash);
+		if (from != null && to != null) {
+			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			url.addParameter("startdate=", formatter.format(from));
+			url.addParameter("&enddate=", formatter.format(to));
+		}
+		try {
+			JSONObject jsonRoot = new JSONObject(JSONHelper.readJsonFromUrl(url.getUrl()));
+			JSONArray listeDesRecords = jsonRoot.getJSONArray("results");
+			System.out.println("nb records : " + listeDesRecords.length());
+			for (int i = 0; i < listeDesRecords.length(); i++) {
+				JSONObject recordJSON = listeDesRecords.getJSONObject(i);
+				// Pour chaque report, on récupère le nom scientifique de l'espèce
+				String scientificName = null;
+				if (!recordJSON.isNull("scientificName"))
+					scientificName = recordJSON.getString("scientificName");
+				if (scientificName != null && !scientificName.equals("")) {
+					// On vérifie si l'espèce fait déjà partie de la liste de nos espèces dans le tableau "species"
+					boolean espece_existante = false;
+					for (int j = 0; j < species.size() && !espece_existante; j++) {
+						// Si une instance existe déjà pour représenter cette l'espèce, il suffit d'ajoute le "record" à sa liste
+						if (scientificName.equals(species.get(j).getScientificName())) {
+							espece_existante = true;
+							String recordedBy = null;
+							if (!recordJSON.isNull("recordedBy"))
+								recordedBy = recordJSON.getString("recordedBy");
+							Record record = new Record(recordedBy);
+							species.get(j).addRecord(record);
+						}
+					}
+					// Si aucune instance n'existe pour cette espèce, alors on en créée une
+					if (!espece_existante) {
+						Species s = new Species();
+						s.setScientificName(scientificName);
+						if (!recordJSON.isNull("order"))
+							s.setOrder(recordJSON.getString("order"));
+						if (!recordJSON.isNull("species"))
+							s.setSpeciesName(recordJSON.getString("species"));
+						if (!recordJSON.isNull("superclass"))
+							s.setSuperClass(recordJSON.getString("superclass"));
+						String recordedBy = null;
+						if (!recordJSON.isNull("recordedBy"))
+							recordedBy = recordJSON.getString("recordedby");
+						Record record = new Record(recordedBy);
+						s.addRecord(record);
+						species.add(s);
+					}
+				}
+			}
+		}
+		catch (JSONException e) {
+			System.err.println("Erreur dans le json - getDetailsRecords()");
+			//e.printStackTrace();
+		}
+		return species;
 	}
 
 }
