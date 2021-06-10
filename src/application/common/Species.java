@@ -14,23 +14,7 @@ public class Species {
 	ArrayList<Region> nbReportsByRegion;
 	ArrayList<Record> records;
 	
-	public Species(String speciesName, String scientificName, int maxOccurrence, int minOccurrence) {
-		super();
-		this.speciesName = speciesName;
-		this.scientificName = scientificName;
-		this.order = null;
-		this.superClass = null;
-		this.maxOccurrence = maxOccurrence;
-		this.minOccurrence = minOccurrence;
-		nbReportsByRegion = new ArrayList<Region>();
-		records = new ArrayList<Record>();
-	}
-
-	public Species(String scientificName, String order, String superClass, String speciesName) {
-		this.scientificName = scientificName;
-		this.order = order;
-		this.superClass = superClass;
-		this.speciesName = speciesName;
+	public Species() {
 		nbReportsByRegion = new ArrayList<Region>();
 		records = new ArrayList<Record>();
 	}
@@ -41,6 +25,18 @@ public class Species {
 	
 	public void addRegion(Region reg) {
 		nbReportsByRegion.add(reg);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		str.append("species: " + speciesName);
+		str.append(" | scientificName: " + scientificName);
+		str.append(" | order: " + order);
+		str.append(" | superClass: " + superClass);
+		str.append(" | nbRecords: " + records.size());
+		str.append(" | nbRegions: " + nbReportsByRegion.size());
+		return str.toString();
 	}
 	
 	public String getScientificName() {
@@ -75,5 +71,28 @@ public class Species {
 	public ArrayList<Record> getRecords() {
 		return records;
 	}
-	
+
+	public void setSpeciesName(String speciesName) {
+		this.speciesName = speciesName;
+	}
+
+	public void setScientificName(String scientificName) {
+		this.scientificName = scientificName;
+	}
+
+	public void setOrder(String order) {
+		this.order = order;
+	}
+
+	public void setSuperClass(String superClass) {
+		this.superClass = superClass;
+	}
+
+	public void setMaxOccurrence(int maxOccurrence) {
+		this.maxOccurrence = maxOccurrence;
+	}
+
+	public void setMinOccurrence(int minOccurrence) {
+		this.minOccurrence = minOccurrence;
+	}
 }
