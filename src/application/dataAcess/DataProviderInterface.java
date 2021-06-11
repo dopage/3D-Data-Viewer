@@ -23,9 +23,17 @@ public interface DataProviderInterface {
 	 * @return : une instance de la classe "species" avec la liste des signalements présente dans son attribut "nbReportsByRegion"
 	 */
 	public Species getNbReportsByRegion(String scientificName, Date from, Date to);
-
-	// retourne un tableau de taille nbIntervals contenant l'espèce et ses signalements par région pour chaque intervalle (exemple : l'élément 3 du tableau contient les signalements de l'espèce pour le 3ème pas de temps)
-	public ArrayList<Species> getNbReportsByZoneByTimeInterval(String scientificName, String geoHash, Date from, int timeInterval, int nbIntervals);
+	
+	/**
+	 * Récupère le nombre de signalements effectués dans chaque région et pour une espèce en particulier pour des intervalles de temps différents
+	 * @param scientificName : le nom scientifique de l'espèce
+	 * @param geoHash : le GeoHash à utiliser
+	 * @param from : la date où débute le premier interval de temps
+	 * @param intervalDuration : la durée en nombre d'années de chaque interval de temps
+	 * @param nbIntervals : le nombre d'intervalles de temps
+	 * @return : une liste d'instances de la classe "species" contenant les signalements de l'espèce à des intervalles de temps différents
+	 */
+	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, String geoHash, Date from, int intervalDuration, int nbIntervals);
 	
 	/**
 	 * Récupère les premiers noms des espèces commençant par une chaîne de caractères passée en paramètre

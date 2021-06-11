@@ -3,6 +3,7 @@ package application.dataAcess;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.json.JSONArray;
@@ -79,9 +80,23 @@ public class DataProvider implements DataProviderInterface {
 	}
 
 	@Override
-	public ArrayList<Species> getNbReportsByZoneByTimeInterval(String scientificName, String geoHash, Date from, int timeInterval, int nbIntervals) {
-		// TODO Auto-generated method stub
-		return null;
+	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, String geoHash, Date from, int intervalDuration, int nbIntervals) {
+		ArrayList<Species> species = new ArrayList<Species>();
+		if (scientificName != null && !scientificName.equals("") && from != null) {
+			// Pour chaque interval de temps, on effectue une requête afin de récupérer les signalements
+			for (int i = 0; i < nbIntervals; i++) {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(from);
+				calendar.add(Calendar.YEAR, intervalDuration * i);
+				Date intervalFrom = calendar.getTime();
+				calendar.add(Calendar.YEAR, intervalDuration);
+				Date intervalTo = calendar.getTime();
+				species.add(this.getNbReportsByRegion(scientificName, intervalFrom, intervalTo));
+			}
+		}
+		// Pour résumer, le tableau "species" va être de taille "nbIntervals" et va contenir
+		// des instances de la classe "Species" pour des intervalles de temps différents 
+		return species;
 	}
 
 	@Override
