@@ -4,6 +4,7 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
@@ -19,7 +20,7 @@
          <children>
             <Pane fx:id="rightPane" layoutX="824.0" layoutY="14.0" prefHeight="770.0" prefWidth="461.0">
                <children>
-                  <Pane layoutX="-1.0" layoutY="-1.0" prefHeight="211.0" prefWidth="461.0">
+                  <Pane fx:id="paneFind" layoutX="-1.0" layoutY="-1.0" prefHeight="216.0" prefWidth="461.0">
                      <children>
                         <Label layoutX="38.0" layoutY="12.0" prefHeight="30.0" prefWidth="283.0" text="Rechercher une espèce">
                            <font>
@@ -53,49 +54,49 @@
                         <DatePicker fx:id="lastDate" layoutX="268.0" layoutY="134.0" />
                      </children>
                   </Pane>
-                  <Pane layoutY="230.0" prefHeight="240.0" prefWidth="460.0">
+                  <Pane fx:id="paneSpecie" layoutY="214.0" prefHeight="216.0" prefWidth="460.0">
                      <children>
-                        <Label layoutX="38.0" layoutY="26.0" prefHeight="30.0" prefWidth="344.0" text="Informations de l'espèce sélectionnée">
+                        <Label layoutX="38.0" layoutY="21.0" prefHeight="30.0" prefWidth="344.0" text="Informations de l'espèce sélectionnée">
                            <font>
                               <Font name="Calibri Bold" size="21.0" />
                            </font>
                         </Label>
-                        <Label layoutX="38.0" layoutY="68.0" prefHeight="20.0" prefWidth="116.0" text="Nom de l'espèce : ">
+                        <Label layoutX="38.0" layoutY="63.0" prefHeight="20.0" prefWidth="116.0" text="Nom de l'espèce : ">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <Label layoutX="38.0" layoutY="103.0" prefHeight="20.0" prefWidth="116.0" text="Nom scientifique :">
+                        <Label layoutX="38.0" layoutY="98.0" prefHeight="20.0" prefWidth="116.0" text="Nom scientifique :">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <Label layoutX="38.0" layoutY="138.0" prefHeight="20.0" prefWidth="116.0" text="Superclass : ">
+                        <Label layoutX="38.0" layoutY="133.0" prefHeight="20.0" prefWidth="116.0" text="Superclass : ">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <Label layoutX="38.0" layoutY="173.0" prefHeight="20.0" prefWidth="116.0" text="Order : ">
+                        <Label layoutX="38.0" layoutY="168.0" prefHeight="20.0" prefWidth="116.0" text="Order : ">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="txtNameInfo" layoutX="156.0" layoutY="66.0" />
-                        <TextField fx:id="txtScientificNameInfo" layoutX="156.0" layoutY="101.0" />
-                        <TextField fx:id="txtSuperclassInfo" layoutX="156.0" layoutY="136.0" />
-                        <TextField fx:id="txtOrderInfo" layoutX="156.0" layoutY="171.0" />
+                        <TextField fx:id="txtNameInfo" layoutX="156.0" layoutY="61.0" />
+                        <TextField fx:id="txtScientificNameInfo" layoutX="156.0" layoutY="96.0" />
+                        <TextField fx:id="txtSuperclassInfo" layoutX="156.0" layoutY="131.0" />
+                        <TextField fx:id="txtOrderInfo" layoutX="156.0" layoutY="166.0" />
                      </children>
                   </Pane>
-                  <Pane layoutY="453.0" prefHeight="291.0" prefWidth="463.0">
+                  <Pane fx:id="paneListView" layoutY="431.0" prefHeight="313.0" prefWidth="463.0">
                      <children>
-                        <Label alignment="CENTER" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des signalements &#10;dans la zone selectionnée" textAlignment="CENTER">
+                        <Label alignment="CENTER" layoutY="7.0" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des signalements &#10;dans la zone selectionnée" textAlignment="CENTER">
                            <font>
                               <Font name="Calibri Bold" size="15.0" />
                            </font>
                         </Label>
-                        <ListView layoutY="52.0" prefHeight="239.0" prefWidth="220.0" />
-                        <ListView layoutX="243.0" layoutY="52.0" prefHeight="239.0" prefWidth="220.0" />
-                        <Label alignment="CENTER" layoutX="243.0" layoutY="1.0" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des espèces observées &#10;dans la zone sélectionnée" textAlignment="CENTER">
+                        <ListView fx:id="listViewReport" layoutY="61.0" prefHeight="230.0" prefWidth="220.0" />
+                        <ListView fx:id="ListViewSpecie" layoutX="243.0" layoutY="61.0" prefHeight="230.0" prefWidth="220.0" />
+                        <Label alignment="CENTER" layoutX="243.0" layoutY="8.0" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des espèces observées &#10;dans la zone sélectionnée" textAlignment="CENTER">
                            <font>
                               <Font name="Calibri Bold" size="15.0" />
                            </font>
@@ -107,36 +108,48 @@
                         <Font name="Symbol" size="10.0" />
                      </font>
                   </Label>
+                  <Separator layoutX="25.0" layoutY="213.0" prefHeight="0.0" prefWidth="420.0" />
+                  <Separator layoutX="26.0" layoutY="431.0" prefHeight="0.0" prefWidth="420.0" />
                </children>
             </Pane>
-            <Pane layoutX="14.0" layoutY="714.0" prefHeight="70.0" prefWidth="800.0">
+            <Pane layoutY="730.0" prefHeight="70.0" prefWidth="813.0">
                <children>
-                  <Slider layoutX="207.0" layoutY="29.0" />
-                  <ToggleButton fx:id="btnPeriod1" layoutX="123.0" layoutY="23.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="39.0" text="Test" />
-                  <Label layoutX="14.0" layoutY="25.0" prefHeight="20.0" prefWidth="148.0" text="Mode histogramme 3D :">
+                  <Slider fx:id="sliderMap" layoutX="204.0" layoutY="29.0" />
+                  <ToggleButton fx:id="btnHisto" layoutX="118.0" layoutY="23.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="39.0" text="Test" />
+                  <Label layoutX="11.0" layoutY="25.0" prefHeight="20.0" prefWidth="106.0" text="Mode histogramme 3D :">
                      <font>
                         <Font name="Calibri" size="10.0" />
                      </font>
                   </Label>
-                  <Label layoutX="392.0" layoutY="26.0" prefHeight="20.0" prefWidth="50.0" text="Zoom : ">
+                  <Label layoutX="379.0" layoutY="26.0" prefHeight="20.0" prefWidth="50.0" text="Zoom : ">
                      <font>
                         <Font name="Calibri" size="14.0" />
                      </font>
                   </Label>
-                  <Button layoutX="527.0" layoutY="24.0" mnemonicParsing="false" text="+" />
-                  <Button layoutX="498.0" layoutY="24.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="-" />
-                  <TextField fx:id="txtNameInfo1" layoutX="437.0" layoutY="24.0" prefHeight="25.0" prefWidth="51.0" />
-                  <Label layoutX="584.0" layoutY="2.0" prefHeight="67.0" prefWidth="213.0" text="Je ne sais pas encore &#10;ce que je vais faire pour ici &#10;avec l'animation (Play / Pause etc...">
+                  <Button fx:id="btnZoomPlus" layoutX="514.0" layoutY="24.0" mnemonicParsing="false" text="+" />
+                  <Button fx:id="btnZoomMinus" layoutX="485.0" layoutY="24.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="-" />
+                  <TextField fx:id="txtNameInfo1" layoutX="424.0" layoutY="24.0" prefHeight="25.0" prefWidth="51.0" />
+                  <Button fx:id="btnPlay" layoutX="646.0" layoutY="23.0" mnemonicParsing="false" text="PLAY">
                      <font>
-                        <Font name="Calibri" size="14.0" />
+                        <Font name="Calibri" size="12.0" />
                      </font>
-                  </Label>
+                  </Button>
+                  <Button fx:id="btnPause" layoutX="697.0" layoutY="23.0" mnemonicParsing="false" text="PAUSE">
+                     <font>
+                        <Font name="Calibri" size="12.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="btnStop" layoutX="757.0" layoutY="23.0" mnemonicParsing="false" text="STOP">
+                     <font>
+                        <Font name="Calibri" size="12.0" />
+                     </font>
+                  </Button>
                </children>
             </Pane>
             <Pane fx:id="pane3D" layoutX="14.0" layoutY="14.0" prefHeight="700.0" prefWidth="800.0" />
-            <Pane fx:id="pane3D1" layoutX="24.0" layoutY="24.0" prefHeight="700.0" prefWidth="800.0">
+            <Pane fx:id="pane3D" layoutX="24.0" layoutY="24.0" prefHeight="700.0" prefWidth="800.0">
                <children>
-                  <Pane layoutX="600.0" layoutY="471.0" prefHeight="229.0" prefWidth="200.0">
+                  <Pane fx:id="paneCaption" layoutX="600.0" layoutY="471.0" prefHeight="229.0" prefWidth="200.0">
                      <children>
                         <Circle fx:id="circleCaption1" fill="DODGERBLUE" layoutX="19.0" layoutY="46.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
                         <Circle fx:id="circleCaption3" fill="DODGERBLUE" layoutX="19.0" layoutY="106.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
@@ -145,42 +158,48 @@
                         <Circle fx:id="circleCaption5" fill="DODGERBLUE" layoutX="19.0" layoutY="125.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
                         <Circle fx:id="circleCaption6" fill="DODGERBLUE" layoutX="19.0" layoutY="145.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
                         <Circle fx:id="circleCaption7" fill="DODGERBLUE" layoutX="19.0" layoutY="165.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+                        <Circle fx:id="circleCaption8" fill="DODGERBLUE" layoutX="19.0" layoutY="185.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
                         <Label alignment="CENTER" layoutX="5.0" layoutY="4.0" prefHeight="20.0" prefWidth="191.0" text="Légende : ">
                            <font>
                               <Font name="Calibri Bold" size="16.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="5.0" layoutY="36.0" prefHeight="20.0" prefWidth="191.0" text="légénde 1">
+                        <Label fx:id="lblCaption1" alignment="CENTER" layoutX="5.0" layoutY="36.0" prefHeight="20.0" prefWidth="191.0" text="légénde 1">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="5.0" layoutY="56.0" prefHeight="20.0" prefWidth="191.0" text="légénde 2">
+                        <Label fx:id="lblCaption2" alignment="CENTER" layoutX="5.0" layoutY="56.0" prefHeight="20.0" prefWidth="191.0" text="légénde 2">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="5.0" layoutY="76.0" prefHeight="20.0" prefWidth="191.0" text="légénde 3">
+                        <Label fx:id="lblCaption3" alignment="CENTER" layoutX="5.0" layoutY="76.0" prefHeight="20.0" prefWidth="191.0" text="légénde 3">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="5.0" layoutY="96.0" prefHeight="20.0" prefWidth="191.0" text="légénde 4">
+                        <Label fx:id="lblCaption4" alignment="CENTER" layoutX="5.0" layoutY="96.0" prefHeight="20.0" prefWidth="191.0" text="légénde 4">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="5.0" layoutY="115.0" prefHeight="20.0" prefWidth="191.0" text="légénde 5">
+                        <Label fx:id="lblCaption5" alignment="CENTER" layoutX="5.0" layoutY="115.0" prefHeight="20.0" prefWidth="191.0" text="légénde 5">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="5.0" layoutY="135.0" prefHeight="20.0" prefWidth="191.0" text="légénde 6">
+                        <Label fx:id="lblCaption6" alignment="CENTER" layoutX="5.0" layoutY="135.0" prefHeight="20.0" prefWidth="191.0" text="légénde 6">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="5.0" layoutY="155.0" prefHeight="20.0" prefWidth="191.0" text="légénde 7">
+                        <Label fx:id="lblCaption7" alignment="CENTER" layoutY="155.0" prefHeight="20.0" prefWidth="202.0" text="légénde 7">
+                           <font>
+                              <Font name="Calibri" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lblCaption8" alignment="CENTER" layoutY="175.0" prefHeight="20.0" prefWidth="201.0" text="légénde 8">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
