@@ -3,6 +3,7 @@ package application.dataAcess;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.json.JSONArray;
@@ -37,49 +38,65 @@ public class DataProvider implements DataProviderInterface {
 	@Override
 	public Species getNbReportsByRegion(String scientificName, Date from, Date to) {
 		Species species = new Species();
+		species.setScientificName(scientificName);
 		int minOccurence = 0;
 		int maxOccurence = 0;
-		String url = "https://api.obis.org/v3/occurrence/grid/3?";
-		if (scientificName != null) {
-			url += "scientificname=" + scientificName;
-		}
-		if (from != null && to != null) {
-			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-			url += "&startdate=" + formatter.format(from) + "&enddate=" + formatter.format(to);
-		}
-		try {
-			JSONObject jsonRoot = new JSONObject(JSONHelper.readJsonFromUrl(url));
-			JSONArray listeDesRegions = jsonRoot.getJSONArray("features");
-			System.out.println("nb regions : " + listeDesRegions.length());
-			for (int i = 0; i < listeDesRegions.length(); i++) {
-				ArrayList<Point2D> points = new ArrayList<Point2D>();
-				JSONArray coords = listeDesRegions.getJSONObject(i).getJSONObject("geometry").getJSONArray("coordinates").getJSONArray(0);
-				for (int j = 0; j < coords.length(); j++) {
-					Point2D p = new Point2D(coords.getJSONArray(j).getDouble(0), coords.getJSONArray(j).getDouble(1));
-					points.add(p);
-				}
-				int nbReports = listeDesRegions.getJSONObject(i).getJSONObject("properties").getInt("n");
-				if (nbReports > maxOccurence)
-					maxOccurence = nbReports;
-				else if (nbReports < minOccurence)
-					minOccurence = nbReports;
-				Region region = new Region(points, nbReports);
-				species.addRegion(region);
+		URLBuilder url = new URLBuilder("https://api.obis.org/v3/occurrence/grid/3?");
+		if (scientificName != null && !scientificName.equals("")) {
+			url.addParameter("scientificname", scientificName);
+			if (from != null && to != null) {
+				DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+				url.addParameter("startdate", formatter.format(from));
+				url.addParameter("&enddate", formatter.format(to));
 			}
-			species.setMinOccurrence(minOccurence);
-			species.setMaxOccurrence(maxOccurence);
-		}
-		catch (JSONException e) {
-			System.err.println("Erreur dans le json - getNbReportsByRegion()");
-			//e.printStackTrace();
+			try {
+				JSONObject jsonRoot = new JSONObject(JSONHelper.readJsonFromUrl(url.getUrl()));
+				JSONArray listeDesRegions = jsonRoot.getJSONArray("features");
+				System.out.println("nb regions : " + listeDesRegions.length());
+				for (int i = 0; i < listeDesRegions.length(); i++) {
+					ArrayList<Point2D> points = new ArrayList<Point2D>();
+					JSONArray coords = listeDesRegions.getJSONObject(i).getJSONObject("geometry").getJSONArray("coordinates").getJSONArray(0);
+					for (int j = 0; j < coords.length(); j++) {
+						Point2D p = new Point2D(coords.getJSONArray(j).getDouble(0), coords.getJSONArray(j).getDouble(1));
+						points.add(p);
+					}
+					int nbReports = listeDesRegions.getJSONObject(i).getJSONObject("properties").getInt("n");
+					if (nbReports > maxOccurence)
+						maxOccurence = nbReports;
+					else if (nbReports < minOccurence)
+						minOccurence = nbReports;
+					Region region = new Region(points, nbReports);
+					species.addRegion(region);
+				}
+				species.setMinOccurrence(minOccurence);
+				species.setMaxOccurrence(maxOccurence);
+			}
+			catch (JSONException e) {
+				System.err.println("Erreur dans le json - getNbReportsByRegion()");
+				//e.printStackTrace();
+			}
 		}
 		return species;
 	}
 
 	@Override
-	public ArrayList<Species> getNbReportsByZoneByTimeInterval(String scientificName, String geoHash, Date from, int timeInterval, int nbIntervals) {
-		// TODO Auto-generated method stub
-		return null;
+	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, String geoHash, Date from, int intervalDuration, int nbIntervals) {
+		ArrayList<Species> species = new ArrayList<Species>();
+		if (scientificName != null && !scientificName.equals("") && from != null) {
+			// Pour chaque interval de temps, on effectue une requête afin de récupérer les signalements
+			for (int i = 0; i < nbIntervals; i++) {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(from);
+				calendar.add(Calendar.YEAR, intervalDuration * i);
+				Date intervalFrom = calendar.getTime();
+				calendar.add(Calendar.YEAR, intervalDuration);
+				Date intervalTo = calendar.getTime();
+				species.add(this.getNbReportsByRegion(scientificName, intervalFrom, intervalTo));
+			}
+		}
+		// Pour résumer, le tableau "species" va être de taille "nbIntervals" et va contenir
+		// des instances de la classe "Species" pour des intervalles de temps différents 
+		return species;
 	}
 
 	@Override
