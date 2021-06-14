@@ -4,6 +4,10 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -159,6 +163,25 @@ public class Controller implements Initializable {
 		// Initialisation de la visibilité des composants
 		//setDateNotVisible();
 		paneDate.setVisible(false);
+		btnSearch.setDisable(true);
+		
+		txtNameInfo.setDisable(true);
+		txtScientificNameInfo.setDisable(true);
+		txtSuperclassInfo.setDisable(true);
+		txtOrderInfo.setDisable(true);
+		
+		// Création d'un Listener pour le textField via sa fonction textProperty()
+		txtName.textProperty().addListener(new ChangeListener<String>(){
+			@Override
+			public void changed(ObservableValue<? extends String> ov, String t, String t1) {
+	           if(t1.equals("")) {
+	        	   btnSearch.setDisable(true);
+	           }
+	           else {
+	        	   btnSearch.setDisable(false);
+	           }
+			}
+		});
 		
 		// Création d'un EventListener pour l'interaction avec btnPeriod
 		btnPeriod.setOnAction(event ->  
@@ -174,10 +197,50 @@ public class Controller implements Initializable {
 		// Création d'un EventListener pour l'intéraction avec le bouton Rechercher
 		btnSearch.setOnAction(event ->
 		{
-			//do smth
-		});
-		
-		
+			boolean testTxt = false;
+			boolean testFirstDate = false;
+			boolean testLastDate = false;
+			
+			if(txtName.getText() == null) {
+				txtName.setStyle("fx-border-color: red;");
+				testTxt=false;
+				
+			}
+			else {
+				testTxt=true;
+			}
+			
+			
+			if(btnPeriod.isSelected()) {
+				// Si la date n'est pas renseignée alors qu'elle le devrait, on averti l'utilisateur avec du rouge là où il faut entrer une date.
+				if(firstDate.getValue() == null) {
+					System.out.println("Vous devez entrer une date de début");
+					firstDate.setStyle("-fx-border-color: red;");
+					testFirstDate = false;
+				}
+				else {
+					firstDate.setStyle("fx-border-color: black;");
+					testFirstDate = true;
+				}
+			
+				// Si la date n'est pas renseignée alors qu'elle le devrait, on averti l'utilisateur avec du rouge là où il faut entrer une date.
+				if(lastDate.getValue() == null) {
+					System.out.println("Vous devez entrer une date de fin");
+					lastDate.setStyle("-fx-border-color: red;");
+					testLastDate = false;
+				}
+				else {
+					lastDate.setStyle("fx-border-color: black;");
+					testLastDate = true;
+				}
+			}
+			
+			if(testTxt && testFirstDate && testLastDate) {
+				// Faire la requête
+				System.out.println("Tout est bon dans le cochon");
+				// faire en sorte que les dates soient cohérentes (date1 < date2 obligatoirement)
+			}
+		});		
 	}
 	
 	public void setDateVisible() {
@@ -186,5 +249,12 @@ public class Controller implements Initializable {
 	
 	public void setDateNotVisible() {
 		paneDate.setVisible(false);
+	}
+	
+	public void setInfosFromRequete(String specieName, String scientificName, String superclass, String order) {
+		txtNameInfo.setText(specieName);
+		txtScientificNameInfo.setText(scientificName);
+		txtSuperclassInfo.setText(superclass);
+		txtOrderInfo.setText(order);
 	}
 }
