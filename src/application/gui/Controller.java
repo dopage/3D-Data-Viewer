@@ -4,17 +4,32 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
 
+import com.interactivemesh.jfx.importer.ImportException;
+import com.interactivemesh.jfx.importer.obj.ObjModelImporter;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Point3D;
+import javafx.scene.AmbientLight;
+import javafx.scene.Group;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.PointLight;
+import javafx.scene.Scene;
+import javafx.scene.SceneAntialiasing;
+import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.PickResult;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.MeshView;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -157,6 +172,10 @@ public class Controller implements Initializable {
 	@FXML 
 	private TextField txtZoom;
 	
+	// Tous les composants du Pane3D
+	@FXML
+	private Pane pane3D;
+	
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -170,6 +189,72 @@ public class Controller implements Initializable {
 		txtSuperclassInfo.setDisable(true);
 		txtOrderInfo.setDisable(true);
 		
+		// La map monde est si belle
+		Group root3D = new Group();
+		Pane pane3D = new Pane(root3D);
+		
+		ObjModelImporter objImporter = new ObjModelImporter();
+		
+		try {
+        	URL modelUrl = this.getClass().getResource("Earth/earth.obj");
+        	System.out.println(modelUrl);
+        	objImporter.read(modelUrl);
+        } catch (ImportException e) {
+        	System.out.println(e.getMessage());
+        }
+		
+		MeshView[] meshViews = objImporter.getImport();
+		Group earth = new Group(meshViews);
+		root3D.getChildren().add(earth);
+		
+		// Ajout du group Camera
+		PerspectiveCamera camera = new PerspectiveCamera(true);
+		CameraManager camManager = new CameraManager(camera, pane3D, root3D);
+		
+		// Les lights
+		PointLight light = new PointLight(Color.WHITE);
+        light.setTranslateX(-180);
+        light.setTranslateY(-90);
+        light.setTranslateZ(-120);
+        light.getScope().addAll(root3D);
+        root3D.getChildren().add(light);
+		
+		// Add ambient light
+        AmbientLight ambientLight = new AmbientLight(Color.WHITE);
+        ambientLight.getScope().addAll(root3D);
+        root3D.getChildren().add(ambientLight);
+		
+		SubScene subScene = new SubScene(pane3D, 824, 724, true, SceneAntialiasing.BALANCED);
+        subScene.setCamera(camera);
+        subScene.setFill(Color.GREY);
+        this.pane3D.getChildren().addAll(subScene);
+		
+        
+        
+        sliderMap.valueProperty().addListener(new ChangeListener<Number>(){
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				System.out.println("New value : " + newValue);	
+				if((double)newValue >= (double)oldValue) {
+					camManager.ry.setAngle(camManager.ry.getAngle() - ((double)newValue/10));
+				}
+				else {
+					camManager.ry.setAngle(camManager.ry.getAngle() + ((double)newValue/10));
+				}
+			}
+      	});
+        
+        
+        // Création d'un gestionnaire d'évenement pour le clic ALT + Souris
+        subScene.addEventHandler(MouseEvent.ANY, event -> {
+        	if(event.getEventType() == MouseEvent.MOUSE_PRESSED && event.isAltDown()) {
+        		PickResult pickResult = event.getPickResult();
+        		Point3D spaceCoord = pickResult.getIntersectedPoint();
+        		System.out.println(spaceCoord);
+        	}
+        });
+        
 		// Création d'un Listener pour le textField via sa fonction textProperty()
 		txtName.textProperty().addListener(new ChangeListener<String>(){
 			@Override

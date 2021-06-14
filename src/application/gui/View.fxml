@@ -93,14 +93,14 @@
                   </Pane>
                   <Pane fx:id="paneListView" layoutY="431.0" prefHeight="313.0" prefWidth="463.0">
                      <children>
-                        <Label alignment="CENTER" layoutY="7.0" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des signalements &#10;dans la zone selectionnée" textAlignment="CENTER">
+                        <Label alignment="CENTER" layoutX="6.0" layoutY="7.0" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des signalements &#10;dans la zone selectionnée" textAlignment="CENTER">
                            <font>
                               <Font name="Calibri Bold" size="15.0" />
                            </font>
                         </Label>
-                        <ListView fx:id="listViewReport" layoutY="61.0" prefHeight="230.0" prefWidth="220.0" />
-                        <ListView fx:id="listViewSpecie" layoutX="243.0" layoutY="61.0" prefHeight="230.0" prefWidth="220.0" />
-                        <Label alignment="CENTER" layoutX="243.0" layoutY="8.0" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des espèces observées &#10;dans la zone sélectionnée" textAlignment="CENTER">
+                        <ListView fx:id="listViewReport" layoutX="9.0" layoutY="61.0" prefHeight="230.0" prefWidth="220.0" />
+                        <ListView fx:id="listViewSpecie" layoutX="238.0" layoutY="61.0" prefHeight="230.0" prefWidth="220.0" />
+                        <Label alignment="CENTER" layoutX="238.0" layoutY="8.0" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des espèces observées &#10;dans la zone sélectionnée" textAlignment="CENTER">
                            <font>
                               <Font name="Calibri Bold" size="15.0" />
                            </font>

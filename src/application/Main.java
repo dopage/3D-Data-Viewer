@@ -13,6 +13,7 @@ public class Main extends Application {
 			Parent root = FXMLLoader.load(getClass().getResource("gui/View.fxml"));
 			primaryStage.setScene(new Scene(root));
 			primaryStage.setTitle("Projet IHM - Esteban & Rayane - OBIS 3D");
+			primaryStage.setResizable(false);
 			primaryStage.show();
 		} catch(Exception e) {
 			e.printStackTrace();
