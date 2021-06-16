@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-/*
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -14,7 +14,7 @@ import java.net.http.HttpClient.Version;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-*/
+
 
 /**
  * Classe permettant de facilité l'importation de fichiers JSON
@@ -48,8 +48,6 @@ public class JSONHelper {
 	{
 		System.out.println("call url: " + url);
 		String json = "";
-		System.err.println("Attention ! La fonction JSONHelper.readJsonFromUrl() a été désactivé pour le moment, requête vers le web impossible.");
-		/*
 		HttpClient client = HttpClient.newBuilder()
 				.version(Version.HTTP_1_1)
 				.followRedirects(Redirect.NORMAL)
@@ -69,7 +67,7 @@ public class JSONHelper {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		*/
+		
 		return json;
 	}	
 
