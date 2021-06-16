@@ -7,6 +7,8 @@ import java.util.ResourceBundle;
 import com.interactivemesh.jfx.importer.ImportException;
 import com.interactivemesh.jfx.importer.obj.ObjModelImporter;
 
+import application.common.Region;
+import javafx.animation.AnimationTimer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
@@ -14,6 +16,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.AmbientLight;
 import javafx.scene.Camera;
@@ -30,6 +33,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.MeshView;
 import javafx.scene.control.DatePicker;
@@ -42,7 +47,7 @@ import javafx.scene.control.SpinnerValueFactory;
 
 public class Controller implements Initializable {
 	
-	// Soyons Organisé
+	// Soyons Organisï¿½
 	
 	// Tous les composants du PaneFind
 	@FXML
@@ -57,7 +62,7 @@ public class Controller implements Initializable {
 	@FXML
 	private TextField txtName;
 
-	// Tous les composants du PaneDate (qui lui même est dans PaneSpecie)
+	// Tous les composants du PaneDate (qui lui mï¿½me est dans PaneSpecie)
 	@FXML
 	private Pane paneDate;
 	
@@ -183,9 +188,12 @@ public class Controller implements Initializable {
 	private static final float TEXTURE_LAT_OFFSET = -0.2f;
     private static final float TEXTURE_LON_OFFSET = 2.8f;
 
+	private static final double TEXTURE_OFFSET = 1.01;
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		// Initialisation de la visibilité des composants
+		
+		// Initialisation de la visibilitï¿½ des composants
 		//setDateNotVisible();
 		paneDate.setVisible(false);
 		btnSearch.setDisable(true);
@@ -202,7 +210,7 @@ public class Controller implements Initializable {
 		firstDate.setValueFactory(svf);
 		lastDate.setValueFactory(svf2);
 		
-		// Ajout de Listener sur les Spinners pour pouvoir gérer la cohérence de leurs valeurs
+		// Ajout de Listener sur les Spinners pour pouvoir gï¿½rer la cohï¿½rence de leurs valeurs
 		
 		firstDate.valueProperty().addListener(new ChangeListener<Integer>() {
 			@Override
@@ -223,12 +231,10 @@ public class Controller implements Initializable {
 			}
         });
 		
-		// La map monde est si belle
+		PerspectiveCamera camera = new PerspectiveCamera(true);
 		Group root3D = new Group();
-		Pane pane3D = new Pane(root3D);
 		
-		ObjModelImporter objImporter = new ObjModelImporter();
-		
+        ObjModelImporter objImporter = new ObjModelImporter();
 		try {
         	URL modelUrl = this.getClass().getResource("Earth/earth.obj");
         	System.out.println(modelUrl);
@@ -240,30 +246,27 @@ public class Controller implements Initializable {
 		MeshView[] meshViews = objImporter.getImport();
 		Group earth = new Group(meshViews);
 		root3D.getChildren().add(earth);
-		
-		// Ajout du group Camera
-		PerspectiveCamera camera = new PerspectiveCamera(true);
-		CameraManager camManager = new CameraManager(camera, pane3D, root3D);
-		
-		// Les lights
-		PointLight light = new PointLight(Color.WHITE);
-		light.setTranslateX(-180);
+        
+	    // Les lights
+	    PointLight light = new PointLight(Color.WHITE);
+ 		light.setTranslateX(-180);
         light.setTranslateY(-90);
         light.setTranslateZ(-120);
         light.getScope().addAll(root3D);
         root3D.getChildren().add(light);
-		
-		// Add ambient light
+ 		
+ 		// Add ambient light
         AmbientLight ambientLight = new AmbientLight(Color.WHITE);
         ambientLight.getScope().addAll(root3D);
         root3D.getChildren().add(ambientLight);
+	    
+	    CameraManager camManager = new CameraManager(camera, pane3D, root3D);
+	    
+		SubScene subScene = new SubScene(root3D, 824, 724, true, SceneAntialiasing.BALANCED);
+		subScene.setCamera(camera);
+		subScene.setFill(Color.GREY);
+		pane3D.getChildren().addAll(subScene);
 		
-		SubScene subScene = new SubScene(pane3D, 824, 724, true, SceneAntialiasing.BALANCED);
-        subScene.setCamera(camera);
-        subScene.setFill(Color.GREY);
-        this.pane3D.getChildren().addAll(subScene);
-		
-        
         // Listener sur le changement de valeur du slider
         sliderMap.valueProperty().addListener(new ChangeListener<Number>(){
 
@@ -310,16 +313,16 @@ public class Controller implements Initializable {
         	// z = -6.9 -> min
         });
         
-        // Création d'un gestionnaire d'évenement pour le clic ALT + Souris
+        // Crï¿½ation d'un gestionnaire d'ï¿½venement pour le clic ALT + Souris
         subScene.addEventHandler(MouseEvent.ANY, event -> {
         	if(event.getEventType() == MouseEvent.MOUSE_PRESSED && event.isAltDown()) {
         		PickResult pickResult = event.getPickResult();
         		Point3D spaceCoord = pickResult.getIntersectedPoint();
-        		System.out.println(spaceCoord);
+        		Point2D longLatCoord = SpaceCoordToGeoCoord(spaceCoord);
         	}
         });
         
-		// Création d'un Listener pour le textField via sa fonction textProperty()
+		// Crï¿½ation d'un Listener pour le textField via sa fonction textProperty()
 		txtName.textProperty().addListener(new ChangeListener<String>(){
 			@Override
 			public void changed(ObservableValue<? extends String> ov, String t, String t1) {
@@ -332,7 +335,7 @@ public class Controller implements Initializable {
 			}
 		});
 		
-		// Création d'un EventListener pour l'interaction avec btnPeriod
+		// Crï¿½ation d'un EventListener pour l'interaction avec btnPeriod
 		btnPeriod.setOnAction(event ->  
     	{
     		if(btnPeriod.isSelected()) {
@@ -343,7 +346,7 @@ public class Controller implements Initializable {
     		}
         });
 		
-		// Création d'un EventListener pour l'intéraction avec le bouton Rechercher
+		// Crï¿½ation d'un EventListener pour l'intï¿½raction avec le bouton Rechercher
 		btnSearch.setOnAction(event ->
 		{
 			boolean testTxt = false;
@@ -366,9 +369,9 @@ public class Controller implements Initializable {
 			}
 			
 			if(testTxt && testFirstDate && testLastDate) {
-				// Faire la requête
+				// Faire la requï¿½te
 				System.out.println("Tout est bon dans le cochon");
-				// faire en sorte que les dates soient cohérentes (date1 < date2 obligatoirement)
+				// faire en sorte que les dates soient cohï¿½rentes (date1 < date2 obligatoirement)
 			}
 		});		
 	}
@@ -398,4 +401,34 @@ public class Controller implements Initializable {
                 java.lang.Math.cos(java.lang.Math.toRadians(lon_cor))
                         * java.lang.Math.cos(java.lang.Math.toRadians(lat_cor)));
     }
+	
+	public static Point2D SpaceCoordToGeoCoord(Point3D p) {
+    	
+	    float lat = (float) (Math.asin(-p.getY() / TEXTURE_OFFSET) 
+	                          * (180 / Math.PI) - TEXTURE_LAT_OFFSET);
+	    float lon;
+	        
+	    if (p.getZ() < 0) {
+	    	lon = 180 - (float) (Math.asin(-p.getX() / (TEXTURE_OFFSET 
+		        * Math.cos((Math.PI / 180) 
+	               * (lat + TEXTURE_LAT_OFFSET)))) * 180 / Math.PI + TEXTURE_LON_OFFSET);
+	    } else {
+	    	lon = (float) (Math.asin(-p.getX() / (TEXTURE_OFFSET * Math.cos((Math.PI / 180) 
+	    		* (lat + TEXTURE_LAT_OFFSET)))) * 180 / Math.PI - TEXTURE_LON_OFFSET);
+	    }
+	        
+	    return new Point2D(lat, lon);    
+	}
+	
+	// Fonction qui trace une zone sur la map-monde grÃ¢ce a des coordonnÃ©es (rÃ©cupÃ©rÃ©es grÃ¢ce Ã  une requete de Rayane)
+	public void afficheRegionMap(Region r) {
+		
+	}
+	
+	public void dessineLegende() {
+		
+	}
+	
+	// faire un chargement pour avertir l'utilisateur qu'il doit attendre pour avoir ses rÃ©sultats.
+
 }
