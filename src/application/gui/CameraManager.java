@@ -61,7 +61,23 @@ public class CameraManager {
         handleMouse(mainRoot, root);
         
     }
+    
+    public Camera getCamera() {
+    	return camera;
+    }
+    
+    public void setCamera(Camera newC) {
+    	this.camera = newC;
+    }
 
+    public Rotate getRy() {
+    	return ry;
+    }
+    
+    public void setRy(Rotate newR) {
+    	this.ry = newR;
+    }
+    
     private void handleMouse(Node mainRoot, final Node root) {
 
         mainRoot.setOnMousePressed(new EventHandler<MouseEvent>() {
@@ -129,16 +145,18 @@ public class CameraManager {
             @Override
             public void handle(KeyEvent event) {
                 switch (event.getCode()) {
-                    case ALT:
-                        cameraXform2.setTranslateX(0.0);
-                        cameraXform2.setTranslateY(0.0);
-
-                        camera.setTranslateZ(CAMERA_INITIAL_DISTANCE);
-
-                        ry.setAngle(CAMERA_INITIAL_Y_ANGLE);
-                        rx.setAngle(CAMERA_INITIAL_X_ANGLE);
-                        break;
-                    default:
+				default:
+					break;
+//                    case ALT:
+//                        cameraXform2.setTranslateX(0.0);
+//                        cameraXform2.setTranslateY(0.0);
+//
+//                        camera.setTranslateZ(CAMERA_INITIAL_DISTANCE);
+//
+//                        ry.setAngle(CAMERA_INITIAL_Y_ANGLE);
+//                        rx.setAngle(CAMERA_INITIAL_X_ANGLE);
+//                        break;
+//                    default:
 
                 }
             }

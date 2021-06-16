@@ -11,10 +11,12 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point3D;
 import javafx.scene.AmbientLight;
+import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.PointLight;
@@ -34,6 +36,8 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 
 
 public class Controller implements Initializable {
@@ -58,10 +62,10 @@ public class Controller implements Initializable {
 	private Pane paneDate;
 	
 	@FXML
-	private DatePicker firstDate;
+	private Spinner<Integer> firstDate;
 	
 	@FXML
-	private DatePicker lastDate;
+	private Spinner<Integer> lastDate;
 	
 	@FXML 
 	private Label lblFirstDate;
@@ -176,6 +180,8 @@ public class Controller implements Initializable {
 	@FXML
 	private Pane pane3D;
 	
+	private static final float TEXTURE_LAT_OFFSET = -0.2f;
+    private static final float TEXTURE_LON_OFFSET = 2.8f;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -188,6 +194,34 @@ public class Controller implements Initializable {
 		txtScientificNameInfo.setDisable(true);
 		txtSuperclassInfo.setDisable(true);
 		txtOrderInfo.setDisable(true);
+		
+		// Spinner Value Factory pour les spinners de Date
+		SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(1920, 2020, 1920, 5);
+		SpinnerValueFactory<Integer> svf2 = new SpinnerValueFactory.IntegerSpinnerValueFactory(1925, 2020, 1925, 5);
+		
+		firstDate.setValueFactory(svf);
+		lastDate.setValueFactory(svf2);
+		
+		// Ajout de Listener sur les Spinners pour pouvoir gérer la cohérence de leurs valeurs
+		
+		firstDate.valueProperty().addListener(new ChangeListener<Integer>() {
+			@Override
+			public void changed(ObservableValue<? extends Integer> arg0, Integer arg1, Integer arg2) {
+				// TODO Auto-generated method stub
+				if(lastDate.getValue() <= arg2) {
+					lastDate.increment();
+				}
+			}
+        });
+		
+		lastDate.valueProperty().addListener(new ChangeListener<Integer>() {
+			@Override
+			public void changed(ObservableValue<? extends Integer> arg0, Integer arg1, Integer arg2) {
+				if(lastDate.getValue() >= arg2) {
+					firstDate.decrement();
+				}
+			}
+        });
 		
 		// La map monde est si belle
 		Group root3D = new Group();
@@ -213,7 +247,7 @@ public class Controller implements Initializable {
 		
 		// Les lights
 		PointLight light = new PointLight(Color.WHITE);
-        light.setTranslateX(-180);
+		light.setTranslateX(-180);
         light.setTranslateY(-90);
         light.setTranslateZ(-120);
         light.getScope().addAll(root3D);
@@ -230,21 +264,51 @@ public class Controller implements Initializable {
         this.pane3D.getChildren().addAll(subScene);
 		
         
-        
+        // Listener sur le changement de valeur du slider
         sliderMap.valueProperty().addListener(new ChangeListener<Number>(){
 
 			@Override
-			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				System.out.println("New value : " + newValue);	
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {	
 				if((double)newValue >= (double)oldValue) {
-					camManager.ry.setAngle(camManager.ry.getAngle() - ((double)newValue/10));
+					camManager.ry.setAngle(camManager.ry.getAngle() - 3);
 				}
 				else {
-					camManager.ry.setAngle(camManager.ry.getAngle() + ((double)newValue/10));
+					camManager.ry.setAngle(camManager.ry.getAngle() + 3);
 				}
 			}
       	});
         
+        // Listener sur le bouton + du zoom
+        btnZoomPlus.setOnAction(event ->{
+        	double z = camera.getTranslateZ();
+            double newZ = z + 0.1;
+            if (newZ > -1.1) {
+            	newZ = -1.1;
+            	txtZoom.setText("MAX");
+            }
+            else {
+            	txtZoom.setText("" + newZ);
+            }
+            camera.setTranslateZ(newZ);
+            
+        });
+        
+        btnZoomMinus.setOnAction(event ->{
+        	double z = camera.getTranslateZ();
+            double newZ = z - 0.1;
+            if (newZ < -6.9) {
+            	newZ = -6.9;
+            	txtZoom.setText("MIN");
+            }
+            else {
+            	txtZoom.setText("" + newZ);
+            }
+            camera.setTranslateZ(newZ);
+        	
+        	// z = 4 -> 100%
+        	// z = 1.1 -> max
+        	// z = -6.9 -> min
+        });
         
         // Création d'un gestionnaire d'évenement pour le clic ALT + Souris
         subScene.addEventHandler(MouseEvent.ANY, event -> {
@@ -297,27 +361,8 @@ public class Controller implements Initializable {
 			
 			
 			if(btnPeriod.isSelected()) {
-				// Si la date n'est pas renseignée alors qu'elle le devrait, on averti l'utilisateur avec du rouge là où il faut entrer une date.
-				if(firstDate.getValue() == null) {
-					System.out.println("Vous devez entrer une date de début");
-					firstDate.setStyle("-fx-border-color: red;");
-					testFirstDate = false;
-				}
-				else {
-					firstDate.setStyle("fx-border-color: black;");
-					testFirstDate = true;
-				}
-			
-				// Si la date n'est pas renseignée alors qu'elle le devrait, on averti l'utilisateur avec du rouge là où il faut entrer une date.
-				if(lastDate.getValue() == null) {
-					System.out.println("Vous devez entrer une date de fin");
-					lastDate.setStyle("-fx-border-color: red;");
-					testLastDate = false;
-				}
-				else {
-					lastDate.setStyle("fx-border-color: black;");
-					testLastDate = true;
-				}
+				// faire des trucs avec les dates
+				testLastDate = true;
 			}
 			
 			if(testTxt && testFirstDate && testLastDate) {
@@ -342,4 +387,15 @@ public class Controller implements Initializable {
 		txtSuperclassInfo.setText(superclass);
 		txtOrderInfo.setText(order);
 	}
+	
+	public static Point3D geoCoordTo3dCoord(float lat, float lon) {
+        float lat_cor = lat + TEXTURE_LAT_OFFSET;
+        float lon_cor = lon + TEXTURE_LON_OFFSET;
+        return new Point3D(
+                -java.lang.Math.sin(java.lang.Math.toRadians(lon_cor))
+                        * java.lang.Math.cos(java.lang.Math.toRadians(lat_cor)),
+                -java.lang.Math.sin(java.lang.Math.toRadians(lat_cor)),
+                java.lang.Math.cos(java.lang.Math.toRadians(lon_cor))
+                        * java.lang.Math.cos(java.lang.Math.toRadians(lat_cor)));
+    }
 }
