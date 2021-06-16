@@ -13,9 +13,10 @@ import org.json.JSONObject;
 import application.common.Record;
 import application.common.Region;
 import application.common.Species;
-import javafx.geometry.Point2D;
+import application.exceptions.UnknownSpeciesException;
 import application.util.JSONHelper;
 import application.util.URLBuilder;
+import javafx.geometry.Point2D;
 
 public class DataProvider implements DataProviderInterface {
 
@@ -31,12 +32,12 @@ public class DataProvider implements DataProviderInterface {
 	}
 	
 	@Override
-	public Species getNbReportsByRegion(String scientificName) {
+	public Species getNbReportsByRegion(String scientificName) throws UnknownSpeciesException {
 		return getNbReportsByRegion(scientificName, null, null);
 	}
- 
+	
 	@Override
-	public Species getNbReportsByRegion(String scientificName, Date from, Date to) {
+	public Species getNbReportsByRegion(String scientificName, Date from, Date to) throws UnknownSpeciesException {
 		Species species = new Species();
 		species.setScientificName(scientificName);
 		int minOccurence = 0;
@@ -51,6 +52,8 @@ public class DataProvider implements DataProviderInterface {
 			}
 			try {
 				JSONObject jsonRoot = new JSONObject(JSONHelper.readJsonFromUrl(url.getUrl()));
+				if (!jsonRoot.isNull("error") && jsonRoot.getString("error").equals("NAME_NOT_FOUND"))
+					throw new UnknownSpeciesException();
 				JSONArray listeDesRegions = jsonRoot.getJSONArray("features");
 				System.out.println("nb regions : " + listeDesRegions.length());
 				for (int i = 0; i < listeDesRegions.length(); i++) {
@@ -80,7 +83,7 @@ public class DataProvider implements DataProviderInterface {
 	}
 
 	@Override
-	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, String geoHash, Date from, int intervalDuration, int nbIntervals) {
+	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, String geoHash, Date from, int intervalDuration, int nbIntervals) throws UnknownSpeciesException {
 		ArrayList<Species> species = new ArrayList<Species>();
 		if (scientificName != null && !scientificName.equals("") && from != null) {
 			// Pour chaque interval de temps, on effectue une requête afin de récupérer les signalements
@@ -123,12 +126,12 @@ public class DataProvider implements DataProviderInterface {
 	}
 
 	@Override
-	public Species getDetailsRecords(String geoHash, String scientificName) {
+	public Species getDetailsRecords(String geoHash, String scientificName) throws UnknownSpeciesException {
 		return getDetailsRecords(geoHash, scientificName, null, null);
 	}
 
 	@Override
-	public Species getDetailsRecords(String geoHash, String scientificName, Date from, Date to) {
+	public Species getDetailsRecords(String geoHash, String scientificName, Date from, Date to) throws UnknownSpeciesException {
 		Species species = new Species();
 		int minOccurence = 0;
 		int maxOccurence = 0;
@@ -145,6 +148,8 @@ public class DataProvider implements DataProviderInterface {
 		}
 		try {
 			JSONObject jsonRoot = new JSONObject(JSONHelper.readJsonFromUrl(url.getUrl()));
+			if (!jsonRoot.isNull("error") && jsonRoot.getString("error").equals("NAME_NOT_FOUND"))
+				throw new UnknownSpeciesException();
 			JSONArray listeDesRecords = jsonRoot.getJSONArray("results");
 			System.out.println("nb records : " + listeDesRecords.length());
 			for (int i = 0; i < listeDesRecords.length(); i++) {
@@ -238,5 +243,4 @@ public class DataProvider implements DataProviderInterface {
 		}
 		return species;
 	}
-
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import application.common.Species;
+import application.exceptions.UnknownSpeciesException;
 import javafx.geometry.Point2D;
 
 public interface DataProviderInterface {
@@ -12,17 +13,19 @@ public interface DataProviderInterface {
 	 * Récupère le nombre de signalements effectués dans chaque région et pour une espèce en particulier
 	 * @param scientificName : le nom scientifique de l'espèce
 	 * @return : une instance de la classe "species" avec la liste des signalements présente dans son attribut "nbReportsByRegion"
+	 * @throws UnknownSpeciesException : une exception peut être lancée si l'espèce n'est pas répertoriée dans la base de données
 	 */
-	public Species getNbReportsByRegion(String scientificName);
-
+	public Species getNbReportsByRegion(String scientificName) throws UnknownSpeciesException;
+	
 	/**
 	 * Récupère le nombre de signalements effectués dans chaque région et pour une espèce en particulier entre deux dates
 	 * @param scientificName : le nom scientifique de l'espèce
 	 * @param from : la date minimal des signalements
 	 * @param to : la date maximal des signalements
 	 * @return : une instance de la classe "species" avec la liste des signalements présente dans son attribut "nbReportsByRegion"
+	 * @throws UnknownSpeciesException : une exception peut être lancée si l'espèce n'est pas répertoriée dans la base de données
 	 */
-	public Species getNbReportsByRegion(String scientificName, Date from, Date to);
+	public Species getNbReportsByRegion(String scientificName, Date from, Date to) throws UnknownSpeciesException;
 	
 	/**
 	 * Récupère le nombre de signalements effectués dans chaque région et pour une espèce en particulier pour des intervalles de temps différents
@@ -32,8 +35,9 @@ public interface DataProviderInterface {
 	 * @param intervalDuration : la durée en nombre d'années de chaque interval de temps
 	 * @param nbIntervals : le nombre d'intervalles de temps
 	 * @return : une liste d'instances de la classe "species" contenant les signalements de l'espèce à des intervalles de temps différents
+	 * @throws UnknownSpeciesException : une exception peut être lancée si l'espèce n'est pas répertoriée dans la base de données
 	 */
-	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, String geoHash, Date from, int intervalDuration, int nbIntervals);
+	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, String geoHash, Date from, int intervalDuration, int nbIntervals) throws UnknownSpeciesException;
 	
 	/**
 	 * Récupère les premiers noms des espèces commençant par une chaîne de caractères passée en paramètre
@@ -49,8 +53,9 @@ public interface DataProviderInterface {
 	 * @param geoHash : le GeoHash à utiliser
 	 * @param scientificName : le nom scientifique de l'espèce
 	 * @return : une instance de la classe "species" avec la liste des enregistrements présente dans son attribut "records"
+	 * @throws UnknownSpeciesException : une exception peut être lancée si l'espèce n'est pas répertoriée dans la base de données
 	 */
-	public Species getDetailsRecords(String geoHash, String scientificName);
+	public Species getDetailsRecords(String geoHash, String scientificName) throws UnknownSpeciesException;
 
 	/**
 	 * Récupère les enregistrements effectués pour une espèce en particulier entre deux dates
@@ -59,8 +64,9 @@ public interface DataProviderInterface {
 	 * @param from : la date minimal des enregistrements
 	 * @param to : la date maximal des enregistrements
 	 * @return : une instance de la classe "species" avec la liste des enregistrements présente dans son attribut "records"
+	 * @throws UnknownSpeciesException : une exception peut être lancée si l'espèce n'est pas répertoriée dans la base de données
 	 */
-	public Species getDetailsRecords(String geoHash, String scientificName, Date from, Date to);
+	public Species getDetailsRecords(String geoHash, String scientificName, Date from, Date to) throws UnknownSpeciesException;
 
 	/**
 	 * Récupère les enregistrements effectués
