@@ -116,6 +116,7 @@
                   <Separator layoutX="26.0" layoutY="431.0" prefHeight="0.0" prefWidth="420.0" />
                </children>
             </Pane>
+            <Pane fx:id="pane3D" prefHeight="724.0" prefWidth="824.0" />
             <Pane fx:id="paneControl3D" layoutY="730.0" prefHeight="70.0" prefWidth="813.0">
                <children>
                   <Slider fx:id="sliderMap" layoutX="204.0" layoutY="29.0" />
@@ -145,66 +146,63 @@
                   </Button>
                </children>
             </Pane>
-            <Pane fx:id="pane3D" prefHeight="724.0" prefWidth="824.0">
+            <Pane fx:id="paneCaption" focusTraversable="true" layoutX="624.0" layoutY="500.0" prefHeight="229.0" prefWidth="200.0">
                <children>
-                  <Pane fx:id="paneCaption" layoutX="624.0" layoutY="495.0" prefHeight="229.0" prefWidth="200.0">
-                     <children>
-                        <Circle fx:id="circleCaption1" fill="DODGERBLUE" layoutX="19.0" layoutY="46.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-                        <Circle fx:id="circleCaption3" fill="DODGERBLUE" layoutX="19.0" layoutY="106.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-                        <Circle fx:id="circleCaption2" fill="DODGERBLUE" layoutX="19.0" layoutY="66.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-                        <Circle fx:id="circleCaption3" fill="DODGERBLUE" layoutX="19.0" layoutY="86.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-                        <Circle fx:id="circleCaption5" fill="DODGERBLUE" layoutX="19.0" layoutY="125.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-                        <Circle fx:id="circleCaption6" fill="DODGERBLUE" layoutX="19.0" layoutY="145.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-                        <Circle fx:id="circleCaption7" fill="DODGERBLUE" layoutX="19.0" layoutY="165.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-                        <Circle fx:id="circleCaption8" fill="DODGERBLUE" layoutX="19.0" layoutY="185.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
-                        <Label alignment="CENTER" layoutX="5.0" layoutY="4.0" prefHeight="20.0" prefWidth="191.0" text="Légende : ">
-                           <font>
-                              <Font name="Calibri Bold" size="16.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="lblCaption1" alignment="CENTER" layoutX="5.0" layoutY="36.0" prefHeight="20.0" prefWidth="191.0" text="légénde 1">
-                           <font>
-                              <Font name="Calibri" size="14.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="lblCaption2" alignment="CENTER" layoutX="5.0" layoutY="56.0" prefHeight="20.0" prefWidth="191.0" text="légénde 2">
-                           <font>
-                              <Font name="Calibri" size="14.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="lblCaption3" alignment="CENTER" layoutX="5.0" layoutY="76.0" prefHeight="20.0" prefWidth="191.0" text="légénde 3">
-                           <font>
-                              <Font name="Calibri" size="14.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="lblCaption4" alignment="CENTER" layoutX="5.0" layoutY="96.0" prefHeight="20.0" prefWidth="191.0" text="légénde 4">
-                           <font>
-                              <Font name="Calibri" size="14.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="lblCaption5" alignment="CENTER" layoutX="5.0" layoutY="115.0" prefHeight="20.0" prefWidth="191.0" text="légénde 5">
-                           <font>
-                              <Font name="Calibri" size="14.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="lblCaption6" alignment="CENTER" layoutX="5.0" layoutY="135.0" prefHeight="20.0" prefWidth="191.0" text="légénde 6">
-                           <font>
-                              <Font name="Calibri" size="14.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="lblCaption7" alignment="CENTER" layoutY="155.0" prefHeight="20.0" prefWidth="202.0" text="légénde 7">
-                           <font>
-                              <Font name="Calibri" size="14.0" />
-                           </font>
-                        </Label>
-                        <Label fx:id="lblCaption8" alignment="CENTER" layoutY="175.0" prefHeight="20.0" prefWidth="201.0" text="légénde 8">
-                           <font>
-                              <Font name="Calibri" size="14.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </Pane>
-               </children></Pane>
+                  <Circle fx:id="circleCaption1" fill="DODGERBLUE" layoutX="19.0" layoutY="46.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Circle fx:id="circleCaption3" fill="DODGERBLUE" layoutX="19.0" layoutY="106.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Circle fx:id="circleCaption2" fill="DODGERBLUE" layoutX="19.0" layoutY="66.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Circle fx:id="circleCaption3" fill="DODGERBLUE" layoutX="19.0" layoutY="86.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Circle fx:id="circleCaption5" fill="DODGERBLUE" layoutX="19.0" layoutY="125.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Circle fx:id="circleCaption6" fill="DODGERBLUE" layoutX="19.0" layoutY="145.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Circle fx:id="circleCaption7" fill="DODGERBLUE" layoutX="19.0" layoutY="165.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Circle fx:id="circleCaption8" fill="DODGERBLUE" layoutX="19.0" layoutY="185.0" radius="5.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Label alignment="CENTER" layoutX="5.0" layoutY="4.0" prefHeight="20.0" prefWidth="191.0" text="Légende : ">
+                     <font>
+                        <Font name="Calibri Bold" size="16.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lblCaption1" alignment="CENTER" layoutX="5.0" layoutY="36.0" prefHeight="20.0" prefWidth="191.0" text="légénde 1">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lblCaption2" alignment="CENTER" layoutX="5.0" layoutY="56.0" prefHeight="20.0" prefWidth="191.0" text="légénde 2">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lblCaption3" alignment="CENTER" layoutX="5.0" layoutY="76.0" prefHeight="20.0" prefWidth="191.0" text="légénde 3">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lblCaption4" alignment="CENTER" layoutX="5.0" layoutY="96.0" prefHeight="20.0" prefWidth="191.0" text="légénde 4">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lblCaption5" alignment="CENTER" layoutX="5.0" layoutY="115.0" prefHeight="20.0" prefWidth="191.0" text="légénde 5">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lblCaption6" alignment="CENTER" layoutX="5.0" layoutY="135.0" prefHeight="20.0" prefWidth="191.0" text="légénde 6">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lblCaption7" alignment="CENTER" layoutY="155.0" prefHeight="20.0" prefWidth="202.0" text="légénde 7">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lblCaption8" alignment="CENTER" layoutY="175.0" prefHeight="20.0" prefWidth="201.0" text="légénde 8">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
          </children>
       </AnchorPane>
    </center>

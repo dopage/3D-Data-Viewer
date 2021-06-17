@@ -35,8 +35,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Affine;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
@@ -247,7 +250,34 @@ public class Controller implements Initializable {
 		MeshView[] meshViews = objImporter.getImport();
 		Group earth = new Group(meshViews);
 		root3D.getChildren().add(earth);
+		
+		Point3D p1 = geoCoordTo3dCoord((float)-27.4710107, (float) 153.0234489); // Melbourne
+		Point3D p2 = geoCoordTo3dCoord((float)-39.029020, (float) 146.315101);
+		Point3D p3 = geoCoordTo3dCoord((float)	-31.9522400, (float) 115.8614000);
+		Point3D p4 = geoCoordTo3dCoord((float)-12.4611300,(float)130.8418500);
+
+		System.out.println(p4);
+		
+		final PhongMaterial material = new PhongMaterial();
+		material.setDiffuseColor(new Color(1, 0, 0.0, 0.1));
         
+		AddQuadrilateral(earth, p1, p2, p3, p4, material);
+		
+		// test look at
+//		Point3D from = geoCoordTo3dCoord(latitude, longitude, 1.0f);
+//		Box box = new Box(0.01f,0.01f,0.01f);
+//
+//		Point3D to = Point3D.ZERO;
+//		Point3D yDir = new Point3D(0, 1, 0);
+//
+//		Group group = new Group();
+//		Affine affine = new Affine();
+//		affine.append( lookAt(from,to,yDir));
+//		group.getTransforms().setAll(affine); 
+//		group.getChildren().addAll(box);
+		
+		
+		
 	    // Les lights
 	    PointLight light = new PointLight(Color.WHITE);
  		light.setTranslateX(-180);
@@ -265,7 +295,7 @@ public class Controller implements Initializable {
 	    
 		SubScene subScene = new SubScene(root3D, 824, 724, true, SceneAntialiasing.BALANCED);
 		subScene.setCamera(camera);
-		subScene.setFill(Color.GREY);
+		subScene.setFill(Color.gray(0.8));
 		pane3D.getChildren().addAll(subScene);
 		
         // Listener sur le changement de valeur du slider
@@ -463,9 +493,60 @@ public class Controller implements Initializable {
 	    return new Point2D(lat, lon);    
 	}
 	
+	// Fonction pour ajouter une zone
+	private void AddQuadrilateral(Group parent, Point3D topRight, Point3D bottomRight, Point3D bottomLeft,
+    		Point3D topLeft, PhongMaterial material) {
+		
+		float coef = (float)1.05;
+		
+    	topRight = new Point3D(topRight.getX()*coef, topRight.getY()*coef , topRight.getZ()*coef);
+    	bottomRight = new Point3D(bottomRight.getX()*coef, bottomRight.getY()*coef , bottomRight.getZ()*coef);
+    	topRight = new Point3D(topLeft.getX()*coef, topLeft.getY()*coef , topLeft.getZ()*coef);
+    	bottomLeft = new Point3D(bottomLeft.getX()*coef, bottomLeft.getY()*coef , bottomLeft.getZ()*coef);
+    	
+    	final TriangleMesh triangleMesh = new TriangleMesh();
+    	
+    	final float[] points = {
+    			(float) topRight.getX(), (float) topRight.getY(), (float) topRight.getZ(),
+    			(float) topLeft.getX(), (float) topLeft.getY(), (float) topLeft.getZ(),
+    			(float) bottomLeft.getX(), (float) bottomLeft.getY(), (float) bottomLeft.getZ(),
+    			(float) bottomRight.getX(), (float) bottomRight.getY(), (float) bottomRight.getZ()	
+    	};
+    	
+    	final float[] texCoords = {
+    			1, 1,
+    			1, 0,
+    			0, 1,
+    			0, 0		
+    	};
+    	
+    	final int[] faces = {
+    		0, 1, 1, 0, 2, 2,
+    		0, 1, 2, 2, 3, 3
+    	};
+    	
+    	triangleMesh.getPoints().setAll(points);
+    	triangleMesh.getTexCoords().setAll(texCoords);
+    	triangleMesh.getFaces().setAll(faces);
+    	
+    	final MeshView meshView = new MeshView(triangleMesh);
+    	meshView.setMaterial(material);
+    	parent.getChildren().add(meshView);
+    	
+    }
+	
+	public static Affine lookAt(Point3D from, Point3D to, Point3D ydir) {
+	    Point3D zVec = to.subtract(from).normalize();
+	    Point3D xVec = ydir.normalize().crossProduct(zVec).normalize();
+	    Point3D yVec = zVec.crossProduct(xVec).normalize();
+	    return new Affine(xVec.getX(), yVec.getX(), zVec.getX(), from.getX(),
+	                      xVec.getY(), yVec.getY(), zVec.getY(), from.getY(),
+	                      xVec.getZ(), yVec.getZ(), zVec.getZ(), from.getZ());
+	}
+	
 	// Fonction qui trace une zone sur la map-monde grâce a des coordonnées (récupérées grâce à une requete de Rayane)
 	public void afficheRegionMap(Region r) {
-		
+			
 	}
 	
 	public void dessineLegende() {
