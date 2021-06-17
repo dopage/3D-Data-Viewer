@@ -141,6 +141,9 @@ public class Controller implements Initializable {
 	@FXML
 	private Pane pane3D;
 	
+	@FXML
+	private Pane pane3DContainer;
+	
 	private static final float TEXTURE_LAT_OFFSET = -0.2f;
     private static final float TEXTURE_LON_OFFSET = 2.8f;
 
@@ -240,7 +243,7 @@ public class Controller implements Initializable {
 		PerspectiveCamera camera = new PerspectiveCamera(true);
 	    CameraManager camManager = new CameraManager(camera, pane3D, root3D, txtZoom);
 	    
-		SubScene subScene = new SubScene(root3D, 824, 724, true, SceneAntialiasing.BALANCED);
+		SubScene subScene = new SubScene(root3D, pane3D.getPrefWidth(), pane3D.getPrefHeight(), true, SceneAntialiasing.BALANCED);
 		subScene.setCamera(camera);
 		subScene.setFill(Color.gray(0.8));
 		pane3D.getChildren().addAll(subScene);
@@ -258,6 +261,15 @@ public class Controller implements Initializable {
 				}
 			}
       	});
+        
+        pane3DContainer.widthProperty().addListener((obs, oldVal, newVal) -> {
+        	pane3D.setPrefWidth(newVal.doubleValue());
+        	subScene.setWidth(newVal.doubleValue());
+        });
+        pane3DContainer.heightProperty().addListener((obs, oldVal, newVal) -> {
+        	pane3D.setPrefHeight(newVal.doubleValue());
+        	subScene.setHeight(newVal.doubleValue());
+        });
         
         // Listener sur le bouton + du zoom
         btnZoomPlus.setOnAction(event -> {

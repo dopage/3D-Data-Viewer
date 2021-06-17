@@ -9,19 +9,20 @@
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.gui.Controller">
-   <center>
-      <AnchorPane prefHeight="800.0" prefWidth="1300.0" BorderPane.alignment="CENTER">
+<BorderPane minHeight="820.0" minWidth="1220.0" prefHeight="820.0" prefWidth="1320.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.gui.Controller">
+   <right>
+      <HBox maxHeight="1.7976931348623157E308" maxWidth="-Infinity" prefWidth="500.0" BorderPane.alignment="CENTER">
          <children>
-            <Pane fx:id="rightPane" layoutX="824.0" layoutY="14.0" prefHeight="770.0" prefWidth="461.0">
+            <Separator maxHeight="1.7976931348623157E308" maxWidth="-Infinity" orientation="VERTICAL" prefHeight="200.0" prefWidth="40.0" />
+            <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" prefHeight="800.0" prefWidth="487.0">
                <children>
-                  <Pane fx:id="paneFind" layoutX="-1.0" layoutY="-1.0" prefHeight="216.0" prefWidth="461.0">
+                  <Pane fx:id="paneFind" prefHeight="216.0" prefWidth="461.0">
                      <children>
                         <Label layoutX="38.0" layoutY="12.0" prefHeight="30.0" prefWidth="283.0" text="Rechercher une espèce">
                            <font>
@@ -59,7 +60,8 @@
                         </Pane>
                      </children>
                   </Pane>
-                  <Pane fx:id="paneSpecie" layoutY="214.0" prefHeight="216.0" prefWidth="460.0">
+                  <Separator prefHeight="0.0" prefWidth="420.0" />
+                  <Pane fx:id="paneSpecie" prefHeight="216.0" prefWidth="347.0">
                      <children>
                         <Label layoutX="38.0" layoutY="21.0" prefHeight="30.0" prefWidth="344.0" text="Informations de l'espèce sélectionnée">
                            <font>
@@ -92,15 +94,16 @@
                         <TextField fx:id="txtOrderInfo" layoutX="156.0" layoutY="166.0" />
                      </children>
                   </Pane>
-                  <Pane fx:id="paneListView" layoutY="431.0" prefHeight="313.0" prefWidth="463.0">
+                  <Separator prefHeight="0.0" prefWidth="420.0" />
+                  <Pane fx:id="paneListView" prefHeight="313.0" prefWidth="463.0">
                      <children>
                         <Label alignment="CENTER" layoutX="6.0" layoutY="7.0" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des signalements &#10;dans la zone selectionnée" textAlignment="CENTER">
                            <font>
                               <Font name="Calibri Bold" size="15.0" />
                            </font>
                         </Label>
-                        <ListView fx:id="listViewReport" layoutX="9.0" layoutY="61.0" prefHeight="230.0" prefWidth="220.0" />
-                        <ListView fx:id="listViewSpecie" layoutX="238.0" layoutY="61.0" prefHeight="230.0" prefWidth="220.0" />
+                        <ListView fx:id="listViewReport" layoutX="9.0" layoutY="61.0" minHeight="70.0" prefHeight="230.0" prefWidth="220.0" />
+                        <ListView fx:id="listViewSpecie" layoutX="238.0" layoutY="61.0" minHeight="70.0" prefHeight="230.0" prefWidth="220.0" />
                         <Label alignment="CENTER" layoutX="238.0" layoutY="8.0" lineSpacing="1.0" prefHeight="51.0" prefWidth="220.0" text="Liste des espèces observées &#10;dans la zone sélectionnée" textAlignment="CENTER">
                            <font>
                               <Font name="Calibri Bold" size="15.0" />
@@ -108,62 +111,90 @@
                         </Label>
                      </children>
                   </Pane>
-                  <Label alignment="CENTER" layoutY="742.0" prefHeight="29.0" prefWidth="461.0" text="Copyright © 2021 Esteban &amp; Rayane">
+                  <Label alignment="CENTER" prefHeight="29.0" prefWidth="461.0" text="Copyright © 2021 Esteban &amp; Rayane">
                      <font>
                         <Font name="Symbol" size="10.0" />
                      </font>
                   </Label>
-                  <Separator layoutX="25.0" layoutY="213.0" prefHeight="0.0" prefWidth="420.0" />
-                  <Separator layoutX="26.0" layoutY="431.0" prefHeight="0.0" prefWidth="420.0" />
                </children>
-            </Pane>
-            <Pane fx:id="pane3D" prefHeight="724.0" prefWidth="824.0" />
-            <Pane fx:id="paneControl3D" layoutY="730.0" prefHeight="70.0" prefWidth="813.0">
-               <children>
-                  <Slider fx:id="sliderMap" layoutX="204.0" layoutY="29.0" />
-                  <ToggleButton fx:id="btnHisto" layoutX="12.0" layoutY="23.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="145.0" text="Mode Histogramme 3D" />
-                  <Label layoutX="379.0" layoutY="26.0" prefHeight="20.0" prefWidth="50.0" text="Zoom : ">
-                     <font>
-                        <Font name="Calibri" size="14.0" />
-                     </font>
-                  </Label>
-                  <Button fx:id="btnZoomPlus" layoutX="514.0" layoutY="24.0" mnemonicParsing="false" text="+" />
-                  <Button fx:id="btnZoomMinus" layoutX="485.0" layoutY="24.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="-" />
-                  <TextField fx:id="txtZoom" layoutX="424.0" layoutY="24.0" prefHeight="25.0" prefWidth="51.0" />
-                  <Button fx:id="btnPlay" layoutX="646.0" layoutY="23.0" mnemonicParsing="false" text="PLAY">
-                     <font>
-                        <Font name="Calibri" size="12.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="btnPause" layoutX="697.0" layoutY="23.0" mnemonicParsing="false" text="PAUSE">
-                     <font>
-                        <Font name="Calibri" size="12.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="btnStop" layoutX="757.0" layoutY="23.0" mnemonicParsing="false" text="STOP">
-                     <font>
-                        <Font name="Calibri" size="12.0" />
-                     </font>
-                  </Button>
-               </children>
-            </Pane>
-            <VBox layoutX="707.0" layoutY="481.0" prefHeight="239.0" prefWidth="111.0" style="-fx-background-color: white;">
-               <children>
-                  <Label alignment="CENTER" prefHeight="55.0" prefWidth="91.0" text="Nombre de signalements :" textAlignment="CENTER" wrapText="true">
-                     <font>
-                        <Font name="Calibri" size="14.0" />
-                     </font>
-                     <VBox.margin>
-                        <Insets bottom="10.0" />
-                     </VBox.margin>
-                  </Label>
-                  <VBox fx:id="vBoxCaptions" prefHeight="140.0" prefWidth="91.0" />
-               </children>
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
             </VBox>
          </children>
-      </AnchorPane>
+      </HBox>
+   </right>
+   <center>
+      <BorderPane prefHeight="200.0" BorderPane.alignment="CENTER">
+         <bottom>
+            <HBox alignment="CENTER" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="60.0" spacing="10.0" BorderPane.alignment="CENTER">
+               <children>
+                  <ToggleButton fx:id="btnHisto" mnemonicParsing="false" prefHeight="25.0" prefWidth="145.0" text="Mode Histogramme 3D" />
+                  <Separator orientation="VERTICAL" prefHeight="200.0">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Separator>
+                  <Slider fx:id="sliderMap" prefHeight="14.0" prefWidth="129.0" />
+                  <Separator orientation="VERTICAL" prefHeight="200.0">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Separator>
+                  <Label prefHeight="20.0" prefWidth="48.0" text="Zoom : ">
+                     <font>
+                        <Font name="Calibri" size="14.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="txtZoom" prefHeight="25.0" prefWidth="51.0" />
+                  <Button fx:id="btnZoomPlus" mnemonicParsing="false" text="+" />
+                  <Button fx:id="btnZoomMinus" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="-" />
+                  <Separator orientation="VERTICAL" prefHeight="200.0">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Separator>
+                  <Button fx:id="btnPlay" mnemonicParsing="false" text="PLAY">
+                     <font>
+                        <Font name="Calibri" size="12.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="btnPause" mnemonicParsing="false" text="PAUSE">
+                     <font>
+                        <Font name="Calibri" size="12.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="btnStop" mnemonicParsing="false" text="STOP">
+                     <font>
+                        <Font name="Calibri" size="12.0" />
+                     </font>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets left="10.0" right="10.0" />
+               </padding>
+            </HBox>
+         </bottom>
+         <center>
+            <Pane fx:id="pane3DContainer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+               <children>
+                  <Pane fx:id="pane3D" prefHeight="700.0" prefWidth="760.0" style="-fx-background-color: grey;" />
+                  <VBox prefHeight="239.0" prefWidth="111.0" style="-fx-background-color: white;">
+                     <children>
+                        <Label alignment="CENTER" prefHeight="55.0" prefWidth="91.0" text="Nombre de signalements :" textAlignment="CENTER" wrapText="true">
+                           <font>
+                              <Font name="Calibri" size="14.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets bottom="10.0" />
+                           </VBox.margin>
+                        </Label>
+                        <VBox fx:id="vBoxCaptions" prefHeight="140.0" prefWidth="91.0" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </children>
+            </Pane>
+         </center>
+      </BorderPane>
    </center>
 </BorderPane>
