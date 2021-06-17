@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ResourceBundle;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 
 import com.interactivemesh.jfx.importer.ImportException;
@@ -18,8 +15,6 @@ import application.common.Species;
 import application.dataAcess.DataProvider;
 import application.geohash.GeoHashHelper;
 import application.geohash.Location;
-import application.util.JSONHelper;
-import application.util.URLBuilder;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -28,6 +23,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
+import javafx.geometry.Pos;
 import javafx.scene.AmbientLight;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
@@ -40,10 +36,11 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
@@ -112,57 +109,8 @@ public class Controller implements Initializable {
 	@FXML
 	private ListView<String> listViewSpecie;
 	
-	// Tous les composants du PaneCaption
 	@FXML
-	private Pane paneCaption;
-	
-	@FXML
-	private Label lblCaption1;
-	
-	@FXML
-	private Label lblCaption2;
-	
-	@FXML
-	private Label lblCaption3;
-	
-	@FXML
-	private Label lblCaption4;
-	
-	@FXML
-	private Label lblCaption5;
-	
-	@FXML
-	private Label lblCaption6;
-	
-	@FXML
-	private Label lblCaption7;
-	
-	@FXML
-	private Label lblCaption8;
-	
-	@FXML 
-	private Circle circleCaption1;
-	
-	@FXML 
-	private Circle circleCaption2;
-	
-	@FXML 
-	private Circle circleCaption3;
-	
-	@FXML 
-	private Circle circleCaption4;
-	
-	@FXML 
-	private Circle circleCaption5;
-	
-	@FXML 
-	private Circle circleCaption6;
-	
-	@FXML 
-	private Circle circleCaption7;
-	
-	@FXML 
-	private Circle circleCaption8;
+	private VBox vBoxCaptions;
 	
 	// Tous les composants du paneControl3D
 	@FXML
@@ -229,7 +177,6 @@ public class Controller implements Initializable {
 		firstDate.valueProperty().addListener(new ChangeListener<Integer>() {
 			@Override
 			public void changed(ObservableValue<? extends Integer> arg0, Integer arg1, Integer arg2) {
-				// TODO Auto-generated method stub
 				if(lastDate.getValue() <= arg2) {
 					lastDate.increment();
 				}
@@ -437,7 +384,9 @@ public class Controller implements Initializable {
 				System.out.println("Tout est bon dans le cochon");
 				// faire en sorte que les dates soient coh�rentes (date1 < date2 obligatoirement)
 			}
-		});		
+		});
+
+		drawCaption(0, 100);
 	}
 	
 	public void setDateVisible() {
@@ -562,14 +511,38 @@ public class Controller implements Initializable {
     	parent.getChildren().addAll(townGroup);
     }
 	
-	
 	// Fonction qui trace une zone sur la map-monde grâce a des coordonnées (récupérées grâce à une requete de Rayane)
 	public void afficheRegionMap(Region r) {
 		
 	}
 	
-	public void dessineLegende() {
-		
+	public void drawCaption(int min, int max) {
+		int nbCaptions = 8;
+		vBoxCaptions.getChildren().clear();
+		for (int i = 0; i < nbCaptions; i++) {
+			Pane p = new Pane();
+			p.setPrefWidth(30);
+			p.setPrefHeight(30);
+			int r = 0 + 255 * i/8;
+			int g = 255 - 255 * i/8;
+			int b = 0;
+			String hex = String.format("%02X%02X%02X", r, g, b);
+			p.setStyle("-fx-background-color: #" + hex);
+			int rangeMin = min + (max-min)/nbCaptions * i;
+			Label lbl = new Label();
+			if (i == nbCaptions - 1) {
+				lbl.setText("[" + rangeMin + ":" + "+" + "]");
+			}
+			else {	
+				int rangeMax = min + (max-min)/nbCaptions * (i+1);
+				lbl.setText("[" + rangeMin + ":" + rangeMax + "]");
+			}
+			HBox hBox = new HBox();
+			hBox.setSpacing(10);
+			hBox.setAlignment(Pos.CENTER_LEFT);
+			hBox.getChildren().addAll(p, lbl);
+			vBoxCaptions.getChildren().add(hBox);
+		}
 	}
 	
 	// faire un chargement pour avertir l'utilisateur qu'il doit attendre pour avoir ses résultats.
