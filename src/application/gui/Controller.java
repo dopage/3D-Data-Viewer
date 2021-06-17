@@ -5,6 +5,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ResourceBundle;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.controlsfx.control.textfield.AutoCompletionBinding;
+import org.controlsfx.control.textfield.TextFields;
+
 import com.interactivemesh.jfx.importer.ImportException;
 import com.interactivemesh.jfx.importer.obj.ObjModelImporter;
 
@@ -13,6 +18,8 @@ import application.common.Species;
 import application.dataAcess.DataProvider;
 import application.geohash.GeoHashHelper;
 import application.geohash.Location;
+import application.util.JSONHelper;
+import application.util.URLBuilder;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -49,8 +56,6 @@ import javafx.scene.control.SpinnerValueFactory;
 
 
 public class Controller implements Initializable {
-	
-	// Soyons Organis�
 	
 	// Tous les composants du PaneFind
 	@FXML
@@ -195,6 +200,7 @@ public class Controller implements Initializable {
 
 	ArrayList<Species> speciesRecords = new ArrayList<Species>();
 	
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
@@ -214,6 +220,9 @@ public class Controller implements Initializable {
 		
 		firstDate.setValueFactory(svf);
 		lastDate.setValueFactory(svf2);
+		
+		//auto_complete(txtName);
+		
 		
 		// Ajout de Listener sur les Spinners pour pouvoir g�rer la coh�rence de leurs valeurs
 		
@@ -268,21 +277,6 @@ public class Controller implements Initializable {
 		material.setDiffuseColor(new Color(1, 0, 0.0, 0.1));
         
 		AddQuadrilateral(earth, p1, p2, p3, p4, material);
-		
-		// test look at
-//		Point3D from = geoCoordTo3dCoord(latitude, longitude, 1.0f);
-//		Box box = new Box(0.01f,0.01f,0.01f);
-//
-//		Point3D to = Point3D.ZERO;
-//		Point3D yDir = new Point3D(0, 1, 0);
-//
-//		Group group = new Group();
-//		Affine affine = new Affine();
-//		affine.append( lookAt(from,to,yDir));
-//		group.getTransforms().setAll(affine); 
-//		group.getChildren().addAll(box);
-		
-		
 		
 	    // Les lights
 	    PointLight light = new PointLight(Color.WHITE);
@@ -391,14 +385,17 @@ public class Controller implements Initializable {
         
 		// Cr�ation d'un Listener pour le textField via sa fonction textProperty()
 		txtName.textProperty().addListener(new ChangeListener<String>(){
+			DataProvider dp = DataProvider.getInstance();
 			@Override
 			public void changed(ObservableValue<? extends String> ov, String t, String t1) {
 	           if(t1.equals("")) {
 	        	   btnSearch.setDisable(true);
 	           }
 	           else {
-	        	   btnSearch.setDisable(false);
+	        	   btnSearch.setDisable(false);	        	   
 	           }
+	           ArrayList<String> arr =  dp.getScientificNamesBeginWith(txtName.getText());
+	           TextFields.bindAutoCompletion(txtName, arr);
 			}
 		});
 		
@@ -503,7 +500,7 @@ public class Controller implements Initializable {
 	private void AddQuadrilateral(Group parent, Point3D topRight, Point3D bottomRight, Point3D bottomLeft,
     		Point3D topLeft, PhongMaterial material) {
 		
-		float coef = (float)1.05;
+		float coef = (float)1.02;
 		
     	topRight = new Point3D(topRight.getX()*coef, topRight.getY()*coef , topRight.getZ()*coef);
     	bottomRight = new Point3D(bottomRight.getX()*coef, bottomRight.getY()*coef , bottomRight.getZ()*coef);
