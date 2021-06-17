@@ -190,13 +190,14 @@ public class DataProvider implements DataProviderInterface {
 		url.addParameter("geometry", geoHash);
 		if (from != null && to != null) {
 			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-			url.addParameter("startdate=", formatter.format(from));
-			url.addParameter("&enddate=", formatter.format(to));
+			url.addParameter("startdate", formatter.format(from));
+			url.addParameter("enddate", formatter.format(to));
 		}
+		url.addParameter("size", "1000");
 		try {
 			JSONObject jsonRoot = new JSONObject(JSONHelper.readJsonFromUrl(url.getUrl()));
 			JSONArray listeDesRecords = jsonRoot.getJSONArray("results");
-			System.out.println("nb records : " + listeDesRecords.length());
+			System.out.println("nb records retrieve : " + listeDesRecords.length());
 			for (int i = 0; i < listeDesRecords.length(); i++) {
 				JSONObject recordJSON = listeDesRecords.getJSONObject(i);
 				// Pour chaque report, on récupère le nom scientifique de l'espèce
@@ -229,7 +230,7 @@ public class DataProvider implements DataProviderInterface {
 							s.setSuperClass(recordJSON.getString("superclass"));
 						String recordedBy = null;
 						if (!recordJSON.isNull("recordedBy"))
-							recordedBy = recordJSON.getString("recordedby");
+							recordedBy = recordJSON.getString("recordedBy");
 						Record record = new Record(recordedBy);
 						s.addRecord(record);
 						species.add(s);

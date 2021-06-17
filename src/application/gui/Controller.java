@@ -1,43 +1,42 @@
 package application.gui;
 
 import java.net.URL;
-import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ResourceBundle;
 
 import com.interactivemesh.jfx.importer.ImportException;
 import com.interactivemesh.jfx.importer.obj.ObjModelImporter;
 
 import application.common.Region;
-import javafx.animation.AnimationTimer;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
+import application.common.Species;
+import application.dataAcess.DataProvider;
+import application.geohash.GeoHashHelper;
+import application.geohash.Location;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.AmbientLight;
-import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.PointLight;
-import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.MeshView;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
@@ -190,6 +189,8 @@ public class Controller implements Initializable {
 
 	private static final double TEXTURE_OFFSET = 1.01;
 
+	ArrayList<Species> speciesRecords = new ArrayList<Species>();
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
@@ -319,8 +320,38 @@ public class Controller implements Initializable {
         		PickResult pickResult = event.getPickResult();
         		Point3D spaceCoord = pickResult.getIntersectedPoint();
         		Point2D longLatCoord = SpaceCoordToGeoCoord(spaceCoord);
+        		if (!Double.isNaN(longLatCoord.getX()) && !Double.isNaN(longLatCoord.getY())) {
+        			DataProvider dp = DataProvider.getInstance();
+        			final Location loc = new Location("Mouse click", longLatCoord.getX(), longLatCoord.getY());
+        			final String locationGeohash = GeoHashHelper.getGeohash(loc);
+        			//System.out.println(locationGeohash.substring(0, 3));
+        			speciesRecords = dp.getDetailsRecords(locationGeohash.substring(0, 3));
+        			System.out.println("Nb species recorded : " + speciesRecords.size());
+        			ArrayList<String> speciesNames = new ArrayList<String>();
+        			for (Species s : speciesRecords)
+        				speciesNames.add(s.getScientificName());
+        			Collections.sort(speciesNames);
+        			ObservableList<String> itemsListView = FXCollections.observableArrayList(speciesNames);
+        			listViewSpecie.setItems(itemsListView);
+        		}
         	}
         });
+        
+        listViewSpecie.setOnMouseClicked( event -> {
+			if(event.getButton().equals(MouseButton.PRIMARY)){
+				if(event.getClickCount() == 2) {
+	                System.out.println("double click (doit exécuter la fonction pour récup les signalements)");
+	            }
+				else {
+					String selectedSpecies = (String) listViewSpecie.getSelectionModel().getSelectedItem();
+					for (Species s : speciesRecords) {
+						if (s.getScientificName().equals(selectedSpecies)) {
+							setInfosFromRequete(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
+						}
+					}
+				}
+	        }
+		});
         
 		// Cr�ation d'un Listener pour le textField via sa fonction textProperty()
 		txtName.textProperty().addListener(new ChangeListener<String>(){
@@ -385,10 +416,22 @@ public class Controller implements Initializable {
 	}
 	
 	public void setInfosFromRequete(String specieName, String scientificName, String superclass, String order) {
-		txtNameInfo.setText(specieName);
-		txtScientificNameInfo.setText(scientificName);
-		txtSuperclassInfo.setText(superclass);
-		txtOrderInfo.setText(order);
+		if (specieName != null)
+			txtNameInfo.setText(specieName);
+		else
+			txtNameInfo.setText("Inconnu");
+		if (scientificName != null)
+			txtScientificNameInfo.setText(scientificName);
+		else
+			txtScientificNameInfo.setText("Inconnu");
+		if (superclass != null)
+			txtSuperclassInfo.setText(superclass);
+		else
+			txtSuperclassInfo.setText("Inconnu");
+		if (order != null)
+			txtOrderInfo.setText(order);
+		else
+			txtOrderInfo.setText("Inconnu");
 	}
 	
 	public static Point3D geoCoordTo3dCoord(float lat, float lon) {
