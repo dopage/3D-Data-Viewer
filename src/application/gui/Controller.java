@@ -192,7 +192,6 @@ public class Controller implements Initializable {
 			}
         });
 		
-		PerspectiveCamera camera = new PerspectiveCamera(true);
 		Group root3D = new Group();
 		
         ObjModelImporter objImporter = new ObjModelImporter();
@@ -238,7 +237,8 @@ public class Controller implements Initializable {
         ambientLight.getScope().addAll(root3D);
         root3D.getChildren().add(ambientLight);
 	    
-	    CameraManager camManager = new CameraManager(camera, pane3D, root3D);
+		PerspectiveCamera camera = new PerspectiveCamera(true);
+	    CameraManager camManager = new CameraManager(camera, pane3D, root3D, txtZoom);
 	    
 		SubScene subScene = new SubScene(root3D, 824, 724, true, SceneAntialiasing.BALANCED);
 		subScene.setCamera(camera);
@@ -251,44 +251,21 @@ public class Controller implements Initializable {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {	
 				if((double)newValue >= (double)oldValue) {
-					camManager.ry.setAngle(camManager.ry.getAngle() - 3);
+					camManager.changeYAngle(-3);
 				}
 				else {
-					camManager.ry.setAngle(camManager.ry.getAngle() + 3);
+					camManager.changeYAngle(3);
 				}
 			}
       	});
         
         // Listener sur le bouton + du zoom
-        btnZoomPlus.setOnAction(event ->{
-        	double z = camera.getTranslateZ();
-            double newZ = z + 0.1;
-            if (newZ > -1.1) {
-            	newZ = -1.1;
-            	txtZoom.setText("MAX");
-            }
-            else {
-            	txtZoom.setText("" + newZ);
-            }
-            camera.setTranslateZ(newZ);
-            
+        btnZoomPlus.setOnAction(event -> {
+        	camManager.zoomIn(20);
         });
         
-        btnZoomMinus.setOnAction(event ->{
-        	double z = camera.getTranslateZ();
-            double newZ = z - 0.1;
-            if (newZ < -6.9) {
-            	newZ = -6.9;
-            	txtZoom.setText("MIN");
-            }
-            else {
-            	txtZoom.setText("" + newZ);
-            }
-            camera.setTranslateZ(newZ);
-        	
-        	// z = 4 -> 100%
-        	// z = 1.1 -> max
-        	// z = -6.9 -> min
+        btnZoomMinus.setOnAction(event -> {
+        	camManager.zoomOut(20);
         });
         
         // Cr�ation d'un gestionnaire d'�venement pour le clic ALT + Souris
