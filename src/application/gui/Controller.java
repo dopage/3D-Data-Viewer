@@ -38,6 +38,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 import javafx.scene.control.Label;
@@ -255,6 +256,11 @@ public class Controller implements Initializable {
 		Point3D p2 = geoCoordTo3dCoord((float)-39.029020, (float) 146.315101);
 		Point3D p3 = geoCoordTo3dCoord((float)	-31.9522400, (float) 115.8614000);
 		Point3D p4 = geoCoordTo3dCoord((float)-12.4611300,(float)130.8418500);
+		
+		addSphere(earth, "a", p1);
+		addSphere(earth, "b", p2);
+		addSphere(earth, "c", p3);
+		addSphere(earth, "d", p4);
 
 		System.out.println(p4);
 		
@@ -501,7 +507,7 @@ public class Controller implements Initializable {
 		
     	topRight = new Point3D(topRight.getX()*coef, topRight.getY()*coef , topRight.getZ()*coef);
     	bottomRight = new Point3D(bottomRight.getX()*coef, bottomRight.getY()*coef , bottomRight.getZ()*coef);
-    	topRight = new Point3D(topLeft.getX()*coef, topLeft.getY()*coef , topLeft.getZ()*coef);
+    	topLeft = new Point3D(topLeft.getX()*coef, topLeft.getY()*coef , topLeft.getZ()*coef);
     	bottomLeft = new Point3D(bottomLeft.getX()*coef, bottomLeft.getY()*coef , bottomLeft.getZ()*coef);
     	
     	final TriangleMesh triangleMesh = new TriangleMesh();
@@ -531,7 +537,7 @@ public class Controller implements Initializable {
     	
     	final MeshView meshView = new MeshView(triangleMesh);
     	meshView.setMaterial(material);
-    	parent.getChildren().add(meshView);
+    	parent.getChildren().addAll(meshView);
     	
     }
 	
@@ -544,9 +550,25 @@ public class Controller implements Initializable {
 	                      xVec.getZ(), yVec.getZ(), zVec.getZ(), from.getZ());
 	}
 	
+	public void addSphere(Group parent, String name, Point3D coord3D) {
+    	Group townGroup = new Group();
+    	townGroup.setId(name);
+    	Sphere sphere = new Sphere(0.01);
+    	final PhongMaterial greenMaterial = new PhongMaterial();
+        greenMaterial.setDiffuseColor(Color.GREEN);
+        greenMaterial.setSpecularColor(Color.GREEN);
+    	sphere.setMaterial(greenMaterial);
+    	townGroup.getChildren().add(sphere);
+    	townGroup.setTranslateX(coord3D.getX());
+    	townGroup.setTranslateY(coord3D.getY());
+    	townGroup.setTranslateZ(coord3D.getZ());
+    	parent.getChildren().addAll(townGroup);
+    }
+	
+	
 	// Fonction qui trace une zone sur la map-monde grâce a des coordonnées (récupérées grâce à une requete de Rayane)
 	public void afficheRegionMap(Region r) {
-			
+		
 	}
 	
 	public void dessineLegende() {
