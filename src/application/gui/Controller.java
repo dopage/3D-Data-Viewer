@@ -35,6 +35,7 @@ import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
@@ -59,6 +60,9 @@ public class Controller implements Initializable {
 	// Tous les composants du PaneFind
 	@FXML
 	private Button btnSearch;
+	
+	@FXML
+	private Label lblUnknownSpecies;
 	
 	@FXML
 	private ToggleButton btnPeriod;
@@ -150,6 +154,7 @@ public class Controller implements Initializable {
 		
 		// Initialisation de la visibilit� des composants
 		paneDate.setVisible(false);
+		lblUnknownSpecies.setVisible(false);
 		
 		// Spinner Value Factory pour les spinners de Date
 		SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(1920, 2020, 1920, 5);
@@ -289,6 +294,15 @@ public class Controller implements Initializable {
 	            }
 	        }
 		});
+        
+        txtName.setOnKeyPressed( event -> {
+        	if(event.getCode() == KeyCode.ENTER)
+        		btnSearch.fire();
+        	else {
+        		lblUnknownSpecies.setVisible(false);
+        		txtName.setStyle("-fx-border-color: rgb(200,200,200); -fx-border-width: 2px;");
+        	}
+        });
         
 		// Cr�ation d'un Listener pour le textField via sa fonction textProperty()
 		txtName.textProperty().addListener((ov, t, t1) -> {
@@ -502,11 +516,11 @@ public class Controller implements Initializable {
 				
 				AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
 			}
-					
 		} catch (UnknownSpeciesException e) {
-			e.printStackTrace();
-			System.err.println("Erreur dans la requete getNbReportsByRegion");
-			txtName.setStyle("fx-border-color: red;");
+			//e.printStackTrace();
+			System.err.println("Erreur dans la requete afficheRegionMap()");
+    		lblUnknownSpecies.setVisible(true);
+			txtName.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
 		}
 	}
 	
@@ -519,7 +533,7 @@ public class Controller implements Initializable {
 			drawCaption(s.getMinOccurrence(), s.getMaxOccurrence());
 			
 			// Affichage des zones sur la mapMonde 
-			for(Region r : s.getNbReportsByRegion()){
+			for(Region r : s.getNbReportsByRegion()) {
 				// Transformation des Point2D et point3D
 				final PhongMaterial pm = new PhongMaterial();
 				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
@@ -531,11 +545,11 @@ public class Controller implements Initializable {
 				
 				AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
 			}
-					
 		} catch (UnknownSpeciesException e) {
-			e.printStackTrace();
-			System.err.println("Erreur dans la requete getNbReportsByRegion");
-			txtName.setStyle("fx-border-color: red;");
+			//e.printStackTrace();
+			System.err.println("Erreur dans la requete afficheRegionMapByDate()");
+    		lblUnknownSpecies.setVisible(true);
+			txtName.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
 		}
 	}
 	

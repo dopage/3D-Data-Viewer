@@ -34,28 +34,28 @@
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <TextField fx:id="txtName" layoutX="151.0" layoutY="56.0" prefHeight="25.0" prefWidth="185.0" promptText="Rechercher...." text="" />
+                        <TextField fx:id="txtName" layoutX="151.0" layoutY="56.0" prefHeight="25.0" prefWidth="185.0" promptText="Rechercher...." style="-fx-border-width: 2px; -fx-border-color: rgb(200,200,200);" text="" />
                         <Button fx:id="btnSearch" disable="true" layoutX="342.0" layoutY="56.0" mnemonicParsing="false" text="Rechercher" />
-                        <Label layoutX="38.0" layoutY="102.0" prefHeight="20.0" prefWidth="134.0" text="Définir une periode : ">
+                        <Label layoutX="38.0" layoutY="111.0" prefHeight="20.0" prefWidth="57.0" text="Période : ">
                            <font>
                               <Font name="Calibri" size="14.0" />
                            </font>
                         </Label>
-                        <ToggleButton fx:id="btnPeriod" layoutX="161.0" layoutY="100.0" mnemonicParsing="false" text="Test" />
-                        <Pane fx:id="paneDate" layoutX="204.0" layoutY="79.0" prefHeight="86.0" prefWidth="213.0">
+                        <ToggleButton fx:id="btnPeriod" layoutX="95.0" layoutY="110.0" mnemonicParsing="false" text="Activer" />
+                        <Pane fx:id="paneDate" layoutX="151.0" layoutY="99.0" prefHeight="46.0" prefWidth="230.0">
                            <children>
-                              <Label layoutX="14.0" layoutY="16.0" prefHeight="20.0" prefWidth="64.0" text="Début :">
+                              <Label layoutX="11.0" layoutY="14.0" prefHeight="20.0" prefWidth="28.0" text="De :">
                                  <font>
                                     <Font name="Calibri" size="14.0" />
                                  </font>
                               </Label>
-                              <Label layoutX="17.0" layoutY="50.0" prefHeight="20.0" prefWidth="61.0" text="Fin : ">
+                              <Label layoutX="121.0" layoutY="15.0" prefHeight="20.0" prefWidth="23.0" text="à : ">
                                  <font>
                                     <Font name="Calibri" size="14.0" />
                                  </font>
                               </Label>
-                              <Spinner fx:id="firstDate" layoutX="96.0" layoutY="14.0" prefHeight="25.0" prefWidth="100.0" />
-                              <Spinner fx:id="lastDate" layoutX="96.0" layoutY="48.0" prefHeight="25.0" prefWidth="100.0" />
+                              <Spinner fx:id="firstDate" layoutX="37.0" layoutY="12.0" prefHeight="25.0" prefWidth="76.0" />
+                              <Spinner fx:id="lastDate" layoutX="144.0" layoutY="14.0" prefHeight="25.0" prefWidth="76.0" />
                            </children>
                         </Pane>
                         <Label layoutX="14.0" layoutY="168.0" prefHeight="20.0" prefWidth="115.0" text="Précision geohash: ">
@@ -64,6 +64,7 @@
                            </font>
                         </Label>
                         <Spinner fx:id="txtGeohash" editable="true" layoutX="131.0" layoutY="166.0" prefHeight="25.0" prefWidth="63.0" />
+                        <Label fx:id="lblUnknownSpecies" layoutX="155.0" layoutY="87.0" text="L'espèce recherchée est inconnue" textFill="RED" />
                      </children>
                   </Pane>
                   <Separator prefHeight="0.0" prefWidth="420.0" />
