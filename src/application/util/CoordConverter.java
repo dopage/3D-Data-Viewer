@@ -21,11 +21,10 @@ public class CoordConverter {
     }
 	
 	public static Point2D SpaceCoordToGeoCoord(Point3D p) {
-    	
 	    float lat = (float) (Math.asin(-p.getY() / TEXTURE_OFFSET) 
 	                          * (180 / Math.PI) - TEXTURE_LAT_OFFSET);
 	    float lon;
-	        
+	    
 	    if (p.getZ() < 0) {
 	    	lon = 180 - (float) (Math.asin(-p.getX() / (TEXTURE_OFFSET 
 		        * Math.cos((Math.PI / 180) 
@@ -34,7 +33,7 @@ public class CoordConverter {
 	    	lon = (float) (Math.asin(-p.getX() / (TEXTURE_OFFSET * Math.cos((Math.PI / 180) 
 	    		* (lat + TEXTURE_LAT_OFFSET)))) * 180 / Math.PI - TEXTURE_LON_OFFSET);
 	    }
-	        
-	    return new Point2D(lat, lon);    
+	    
+	    return new Point2D(lat, lon);
 	}
 }

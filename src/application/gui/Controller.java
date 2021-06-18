@@ -268,26 +268,25 @@ public class Controller implements Initializable {
         	}
         });
         
+        listViewSpecies.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+        	for (Species s : speciesRecords) {
+				if (s.getScientificName().equals(newVal)) {
+					setInfosFromRequete(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
+				}
+			}
+        });
+        
         listViewSpecies.setOnMouseClicked( event -> {
 			if(event.getButton().equals(MouseButton.PRIMARY)){
 				if(event.getClickCount() == 2) {
-//	                afficheRegionMap((String) listViewSpecie.getSelectionModel().getSelectedIndex());
-					String selectedSpecies = (String) listViewSpecies.getSelectionModel().getSelectedItem();
+					String selectedSpeciesName = listViewSpecies.getSelectionModel().getSelectedItem();
 					for (Species s : speciesRecords) {
-						if (s.getScientificName().equals(selectedSpecies)) {
-							afficheRegionMap(s.getScientificName());
+						if (s.getScientificName().equals(selectedSpeciesName)) {
 							txtName.setText(s.getScientificName());
+							afficheRegionMap(s.getScientificName());
 						}
 					}
 	            }
-				else {
-					String selectedSpecies = (String) listViewSpecies.getSelectionModel().getSelectedItem();
-					for (Species s : speciesRecords) {
-						if (s.getScientificName().equals(selectedSpecies)) {
-							setInfosFromRequete(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
-						}
-					}
-				}
 	        }
 		});
         
@@ -330,14 +329,9 @@ public class Controller implements Initializable {
         });
 		
 		// Cr�ation d'un EventListener pour l'int�raction avec le bouton Rechercher
-		btnSearch.setOnAction(event ->
-		{
-			boolean testDate = false;
+		btnSearch.setOnAction(event -> {
+			//On vérifie si l'utilsateur a selectionné un interval de temps
 			if(btnPeriod.isSelected()) {
-				// faire des trucs avec les dates
-				testDate = true;
-			}
-			if(testDate) {
 				afficheRegionMapByDate(txtName.getText(), creerDate(firstDate.getValue(), 1, 1), creerDate(lastDate.getValue(), 1, 1));
 			}
 			else {
