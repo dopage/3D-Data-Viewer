@@ -318,7 +318,14 @@ public class Controller implements Initializable {
         listViewSpecie.setOnMouseClicked( event -> {
 			if(event.getButton().equals(MouseButton.PRIMARY)){
 				if(event.getClickCount() == 2) {
-	                System.out.println("double click (doit exécuter la fonction pour récup les signalements)");
+//	                afficheRegionMap((String) listViewSpecie.getSelectionModel().getSelectedIndex());
+					String selectedSpecies = (String) listViewSpecie.getSelectionModel().getSelectedItem();
+					for (Species s : speciesRecords) {
+						if (s.getScientificName().equals(selectedSpecies)) {
+							afficheRegionMap(s.getScientificName());
+							txtName.setText(s.getScientificName());
+						}
+					}
 	            }
 				else {
 					String selectedSpecies = (String) listViewSpecie.getSelectionModel().getSelectedItem();
@@ -341,6 +348,7 @@ public class Controller implements Initializable {
 			new Thread(new Runnable() {
 			    public void run() {
 			    	ArrayList<String> arr =  dp.getScientificNamesBeginWith(txtName.getText());
+        			//System.out.println(arr);
 			    	Runnable command = new Runnable() {
         		        @Override
         		        public void run() {
@@ -385,38 +393,8 @@ public class Controller implements Initializable {
 			if(testDate) {
 						
 			}
-			else {	
-				try {
-					gCourant.getChildren().clear();
-					Species s = dp.getNbReportsByRegion(txtName.getText());
-							
-					// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
-					drawCaption(s.getMinOccurrence(), s.getMaxOccurrence());
-							
-					// test
-					System.out.println("SpeciesName = " + s.getSpeciesName() + " : " + s.toString());
-							
-					// Affichage des zones sur la mapMonde 
-					for(Region r : s.getNbReportsByRegion()){
-						// Transformation des Point2D et point3D
-						final PhongMaterial pm = new PhongMaterial();
-								
-						pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
-								
-						Point3D p1 = geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
-						Point3D p2 = geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
-						Point3D p3 = geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
-						Point3D p4 = geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
-								
-								
-						AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
-					}
-							
-				} catch (UnknownSpeciesException e) {
-					e.printStackTrace();
-					System.err.println("Erreur dans la requete getNbReportsByRegion");
-					txtName.setStyle("fx-border-color: red;");
-				}
+			else {
+				afficheRegionMap(txtName.getText());
 			}
 		});
 	}
@@ -585,16 +563,49 @@ public class Controller implements Initializable {
 			int rangeMin = min + (max-min)/nbCaptions * i;
 			
 			if (i == nbCaptions - 1) {
-				return new Color(r,g,b, 0.9);
+				return new Color(r,g,b, 0.005);
 			}
 			else {	
 				int rangeMax = min + (max-min)/nbCaptions * (i+1);
 				if(val >= rangeMin && val < rangeMax) {
-					return new Color(r,g,b, 0.9);
+					return new Color(r,g,b, 0.005);
 				}
 			}
 		}
 		return Color.BLUE;
+	}
+	
+	public void afficheRegionMap(String nameSpecie) {
+		DataProvider dp = DataProvider.getInstance();
+		
+		try {
+			gCourant.getChildren().clear();
+			Species s = dp.getNbReportsByRegion(nameSpecie);
+					
+			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
+			drawCaption(s.getMinOccurrence(), s.getMaxOccurrence());
+					
+			// Affichage des zones sur la mapMonde 
+			for(Region r : s.getNbReportsByRegion()){
+				// Transformation des Point2D et point3D
+				final PhongMaterial pm = new PhongMaterial();
+						
+				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
+						
+				Point3D p1 = geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
+				Point3D p2 = geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
+				Point3D p3 = geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
+				Point3D p4 = geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
+						
+						
+				AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
+			}
+					
+		} catch (UnknownSpeciesException e) {
+			e.printStackTrace();
+			System.err.println("Erreur dans la requete getNbReportsByRegion");
+			txtName.setStyle("fx-border-color: red;");
+		}
 	}
 	
 	// faire un chargement pour avertir l'utilisateur qu'il doit attendre pour avoir ses résultats.
