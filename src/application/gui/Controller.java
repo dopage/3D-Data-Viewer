@@ -14,6 +14,7 @@ import com.interactivemesh.jfx.importer.obj.ObjModelImporter;
 import application.common.Region;
 import application.common.Species;
 import application.dataAcess.DataProvider;
+import application.exceptions.UnknownSpeciesException;
 import application.geohash.GeoHashHelper;
 import application.geohash.Location;
 import impl.org.controlsfx.autocompletion.AutoCompletionTextFieldBinding;
@@ -156,6 +157,8 @@ public class Controller implements Initializable {
 	AutoCompletionBinding acbResearch;
 	SuggestionProvider<String> suggestionProvider;
 	
+	Group gCourant = new Group();
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
@@ -213,23 +216,7 @@ public class Controller implements Initializable {
 		MeshView[] meshViews = objImporter.getImport();
 		Group earth = new Group(meshViews);
 		root3D.getChildren().add(earth);
-		
-		Point3D p1 = geoCoordTo3dCoord((float)-27.4710107, (float) 153.0234489); // Melbourne
-		Point3D p2 = geoCoordTo3dCoord((float)-39.029020, (float) 146.315101);
-		Point3D p3 = geoCoordTo3dCoord((float)	-31.9522400, (float) 115.8614000);
-		Point3D p4 = geoCoordTo3dCoord((float)-12.4611300,(float)130.8418500);
-		
-		addSphere(earth, "a", p1);
-		addSphere(earth, "b", p2);
-		addSphere(earth, "c", p3);
-		addSphere(earth, "d", p4);
-
-		System.out.println(p4);
-		
-		final PhongMaterial material = new PhongMaterial();
-		material.setDiffuseColor(new Color(1, 0, 0.0, 0.1));
-        
-		AddQuadrilateral(earth, p1, p2, p3, p4, material);
+		earth.getChildren().add(gCourant);
 		
 	    // Les lights
 	    PointLight light = new PointLight(Color.WHITE);
@@ -396,34 +383,55 @@ public class Controller implements Initializable {
         });
 		
 		// Cr�ation d'un EventListener pour l'int�raction avec le bouton Rechercher
+		// Cr�ation d'un EventListener pour l'int�raction avec le bouton Rechercher
 		btnSearch.setOnAction(event ->
 		{
-			boolean testTxt = false;
-			boolean testFirstDate = false;
-			boolean testLastDate = false;
-			
-			if(txtName.getText() == null) {
-				txtName.setStyle("fx-border-color: red;");
-				testTxt=false;
-				
-			}
-			else {
-				testTxt=true;
-			}
-			
+			boolean testDate = false;
+					
 			if(btnPeriod.isSelected()) {
 				// faire des trucs avec les dates
-				testLastDate = true;
+				testDate = true;
 			}
-			
-			if(testTxt && testFirstDate && testLastDate) {
-				// Faire la requ�te
-				System.out.println("Tout est bon dans le cochon");
-				// faire en sorte que les dates soient coh�rentes (date1 < date2 obligatoirement)
+
+			if(testDate) {
+						
+			}
+			else {
+				DataProvider dp = DataProvider.getInstance();
+						
+				try {
+					gCourant.getChildren().clear();
+					Species s = dp.getNbReportsByRegion(txtName.getText());
+							
+					// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
+					drawCaption(s.getMinOccurrence(), s.getMaxOccurrence());
+							
+					// test
+					System.out.println("SpeciesName = " + s.getSpeciesName() + " : " + s.toString());
+							
+					// Affichage des zones sur la mapMonde 
+					for(Region r : s.getNbReportsByRegion()){
+						// Transformation des Point2D et point3D
+						final PhongMaterial pm = new PhongMaterial();
+								
+						pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
+								
+						Point3D p1 = geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
+						Point3D p2 = geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
+						Point3D p3 = geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
+						Point3D p4 = geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
+								
+								
+						AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
+					}
+							
+				} catch (UnknownSpeciesException e) {
+					e.printStackTrace();
+					System.err.println("Erreur dans la requete getNbReportsByRegion");
+					txtName.setStyle("fx-border-color: red;");
+				}
 			}
 		});
-	
-		drawCaption(0, 100);
 	}
 	
 	public void setDateVisible() {
@@ -486,7 +494,7 @@ public class Controller implements Initializable {
 	private void AddQuadrilateral(Group parent, Point3D topRight, Point3D bottomRight, Point3D bottomLeft,
     		Point3D topLeft, PhongMaterial material) {
 		
-		float coef = (float)1.02;
+		float coef = (float)1.01;
 		
     	topRight = new Point3D(topRight.getX()*coef, topRight.getY()*coef , topRight.getZ()*coef);
     	bottomRight = new Point3D(bottomRight.getX()*coef, bottomRight.getY()*coef , bottomRight.getZ()*coef);
@@ -580,6 +588,26 @@ public class Controller implements Initializable {
 			hBox.getChildren().addAll(p, lbl);
 			vBoxCaptions.getChildren().add(hBox);
 		}
+	}
+	
+	public Color getColorforQuadri(int nbCaptions, int min, int max, int val) {
+		for (int i = 0; i < nbCaptions; i++) {
+			float r = 0 + 1 * (float)(i)/8;
+			float g = 1 - 1 * (float)(i)/8;
+			float b = 0;
+			int rangeMin = min + (max-min)/nbCaptions * i;
+			
+			if (i == nbCaptions - 1) {
+				return new Color(r,g,b, 0.9);
+			}
+			else {	
+				int rangeMax = min + (max-min)/nbCaptions * (i+1);
+				if(val >= rangeMin && val < rangeMax) {
+					return new Color(r,g,b, 0.9);
+				}
+			}
+		}
+		return Color.BLUE;
 	}
 	
 	// faire un chargement pour avertir l'utilisateur qu'il doit attendre pour avoir ses résultats.
