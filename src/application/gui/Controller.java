@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ResourceBundle;
 
+import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 
 import com.interactivemesh.jfx.importer.ImportException;
@@ -15,6 +16,8 @@ import application.common.Species;
 import application.dataAcess.DataProvider;
 import application.geohash.GeoHashHelper;
 import application.geohash.Location;
+import impl.org.controlsfx.autocompletion.AutoCompletionTextFieldBinding;
+import impl.org.controlsfx.autocompletion.SuggestionProvider;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -50,7 +53,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
-
+import javafx.application.Platform;
 
 public class Controller implements Initializable {
 	
@@ -150,7 +153,8 @@ public class Controller implements Initializable {
 	private static final double TEXTURE_OFFSET = 1.01;
 
 	ArrayList<Species> speciesRecords = new ArrayList<Species>();
-	
+	AutoCompletionBinding acbResearch;
+	SuggestionProvider<String> suggestionProvider;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -291,14 +295,27 @@ public class Controller implements Initializable {
         			final Location loc = new Location("Mouse click", longLatCoord.getX(), longLatCoord.getY());
         			final String locationGeohash = GeoHashHelper.getGeohash(loc);
         			//System.out.println(locationGeohash.substring(0, 3));
-        			speciesRecords = dp.getDetailsRecords(locationGeohash.substring(0, 3));
-        			System.out.println("Nb species recorded : " + speciesRecords.size());
-        			ArrayList<String> speciesNames = new ArrayList<String>();
-        			for (Species s : speciesRecords)
-        				speciesNames.add(s.getScientificName());
-        			Collections.sort(speciesNames);
-        			ObservableList<String> itemsListView = FXCollections.observableArrayList(speciesNames);
-        			listViewSpecie.setItems(itemsListView);
+        			
+        			new Thread(new Runnable() {
+        			    public void run() {
+        			    	speciesRecords = dp.getDetailsRecords(locationGeohash.substring(0, 3));
+                			System.out.println("Nb species recorded : " + speciesRecords.size());
+                			ArrayList<String> speciesNames = new ArrayList<String>();
+                			for (Species s : speciesRecords)
+                				speciesNames.add(s.getScientificName());
+                			Collections.sort(speciesNames);
+                			
+                			Runnable command = new Runnable() {
+                		        @Override
+                		        public void run() {
+                        			ObservableList<String> itemsListView = FXCollections.observableArrayList(speciesNames);
+                        			listViewSpecie.setItems(itemsListView);
+                		        }
+                		    };
+                		    //Permet d'excuter l'actualisation de l'UI dans le thread principal
+                		    Platform.runLater(command);
+        			    }
+        			}).start();
         		}
         	}
         });
@@ -320,19 +337,51 @@ public class Controller implements Initializable {
 		});
         
 		// Cr�ation d'un Listener pour le textField via sa fonction textProperty()
-		txtName.textProperty().addListener(new ChangeListener<String>(){
+		txtName.textProperty().addListener((ov, t, t1) -> {
 			DataProvider dp = DataProvider.getInstance();
-			@Override
-			public void changed(ObservableValue<? extends String> ov, String t, String t1) {
-	           if(t1.equals("")) {
-	        	   btnSearch.setDisable(true);
-	           }
-	           else {
-	        	   btnSearch.setDisable(false);	        	   
-	           }
-	           ArrayList<String> arr =  dp.getScientificNamesBeginWith(txtName.getText());
-	           TextFields.bindAutoCompletion(txtName, arr);
-			}
+			if(t1.equals(""))
+	       	   btnSearch.setDisable(true);
+			else
+				btnSearch.setDisable(false);
+			
+			new Thread(new Runnable() {
+			    public void run() {
+			    	/*
+			    	if (suggestionProvider != null) {
+    		        	//suggestionProvider.clearSuggestions();
+			    	}
+			    	*/
+			    	ArrayList<String> arr =  dp.getScientificNamesBeginWith(txtName.getText());
+        			System.out.println(arr);
+			    	Runnable command = new Runnable() {
+        		        @Override
+        		        public void run() {
+        		        	// let's suppose initially we have this possible values:
+        		        	if (suggestionProvider == null) {
+        		        		suggestionProvider = SuggestionProvider.create(arr);
+        		        		new AutoCompletionTextFieldBinding<>(txtName, suggestionProvider);		
+        		        	}
+        		        	else {
+        		        		System.out.println("change sugg");
+            		        	suggestionProvider.clearSuggestions();
+            		        	suggestionProvider.addPossibleSuggestions(arr);
+        		        	}
+        		        	/*
+        		        	if (acbResearch != null) {
+        		        		//System.out.println("on dispose");
+        		        		//acbResearch.dispose();
+        		        	}
+        		        	else {
+        		        		acbResearch = TextFields.bindAutoCompletion(txtName, arr);	
+        		        	}
+        		        	*/
+        		        }
+        		    };
+        		    //Permet d'excuter l'actualisation de l'UI dans le thread principal
+        		    Platform.runLater(command);
+			    }
+			}).start();
+			
 		});
 		
 		// Cr�ation d'un EventListener pour l'interaction avec btnPeriod
@@ -362,7 +411,6 @@ public class Controller implements Initializable {
 				testTxt=true;
 			}
 			
-			
 			if(btnPeriod.isSelected()) {
 				// faire des trucs avec les dates
 				testLastDate = true;
@@ -374,7 +422,7 @@ public class Controller implements Initializable {
 				// faire en sorte que les dates soient coh�rentes (date1 < date2 obligatoirement)
 			}
 		});
-
+	
 		drawCaption(0, 100);
 	}
 	

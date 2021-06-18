@@ -176,7 +176,7 @@
             <Pane fx:id="pane3DContainer" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
                <children>
                   <Pane fx:id="pane3D" prefHeight="700.0" prefWidth="760.0" style="-fx-background-color: grey;" />
-                  <VBox prefHeight="239.0" prefWidth="111.0" style="-fx-background-color: white;">
+                  <VBox prefHeight="239.0" prefWidth="111.0" style="-fx-background-color: rgba(255, 255, 255, 0.7);">
                      <children>
                         <Label alignment="CENTER" prefHeight="55.0" prefWidth="91.0" text="Nombre de signalements :" textAlignment="CENTER" wrapText="true">
                            <font>
