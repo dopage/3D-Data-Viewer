@@ -7,9 +7,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.ResourceBundle;
 
-import org.controlsfx.control.textfield.AutoCompletionBinding;
-import org.controlsfx.control.textfield.TextFields;
-
 import com.interactivemesh.jfx.importer.ImportException;
 import com.interactivemesh.jfx.importer.obj.ObjModelImporter;
 
@@ -22,8 +19,6 @@ import application.geohash.Location;
 import application.util.CoordConverter;
 import impl.org.controlsfx.autocompletion.AutoCompletionTextFieldBinding;
 import impl.org.controlsfx.autocompletion.SuggestionProvider;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -63,9 +58,6 @@ public class Controller implements Initializable {
 	
 	// Tous les composants du PaneFind
 	@FXML
-	private Pane paneFind;
-	
-	@FXML
 	private Button btnSearch;
 	
 	@FXML
@@ -73,8 +65,11 @@ public class Controller implements Initializable {
 	
 	@FXML
 	private TextField txtName;
+	
+	@FXML
+	private Spinner<Integer> txtGeohash;
 
-	// Tous les composants du PaneDate (qui lui m�me est dans PaneSpecie)
+	// Tous les composants du PaneDate (qui lui m�me est dans PaneSpecies)
 	@FXML
 	private Pane paneDate;
 	
@@ -84,18 +79,9 @@ public class Controller implements Initializable {
 	@FXML
 	private Spinner<Integer> lastDate;
 	
+	// Tous les composants du PaneSpecies
 	@FXML
-	private Spinner<Integer> txtGeohash;
-	
-	@FXML
-	private Label lblFirstDate;
-	
-	@FXML
-	private Label lblLastDate;
-	
-	// Tous les composants du PaneSpecie
-	@FXML
-	private Pane paneSpecie;
+	private Pane paneSpecies;
 	
 	@FXML	
 	private TextField txtNameInfo;
@@ -117,7 +103,7 @@ public class Controller implements Initializable {
 	private ListView<String> listViewReport;
 	
 	@FXML
-	private ListView<String> listViewSpecie;
+	private ListView<String> listViewSpecies;
 	
 	@FXML
 	private VBox vBoxCaptions;
@@ -155,25 +141,15 @@ public class Controller implements Initializable {
 	private Pane pane3DContainer;
 
 	ArrayList<Species> speciesRecords = new ArrayList<Species>();
-	AutoCompletionBinding acbResearch;
 	SuggestionProvider<String> suggestionProvider;
-	
 	Group gCourant = new Group();
-	
 	DataProvider dp = DataProvider.getInstance();
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
 		// Initialisation de la visibilit� des composants
-		//setDateNotVisible();
 		paneDate.setVisible(false);
-		btnSearch.setDisable(true);
-		
-		txtNameInfo.setDisable(true);
-		txtScientificNameInfo.setDisable(true);
-		txtSuperclassInfo.setDisable(true);
-		txtOrderInfo.setDisable(true);
 		
 		// Spinner Value Factory pour les spinners de Date
 		SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(1920, 2020, 1920, 5);
@@ -187,22 +163,14 @@ public class Controller implements Initializable {
 		
 		// Ajout de Listener sur les Spinners pour pouvoir g�rer la coh�rence de leurs valeurs
 		
-		firstDate.valueProperty().addListener(new ChangeListener<Integer>() {
-			@Override
-			public void changed(ObservableValue<? extends Integer> arg0, Integer arg1, Integer arg2) {
-				if(lastDate.getValue() <= arg2) {
-					lastDate.increment();
-				}
-			}
+		firstDate.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if(lastDate.getValue() <= newVal)
+				lastDate.increment();
         });
 		
-		lastDate.valueProperty().addListener(new ChangeListener<Integer>() {
-			@Override
-			public void changed(ObservableValue<? extends Integer> arg0, Integer arg1, Integer arg2) {
-				if(lastDate.getValue() >= arg2) {
-					firstDate.decrement();
-				}
-			}
+		lastDate.valueProperty().addListener((obs, oldVal, newVal) -> {
+			if(lastDate.getValue() >= newVal)
+				firstDate.decrement();
         });
 		
 		txtGeohash.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -247,17 +215,11 @@ public class Controller implements Initializable {
 		pane3D.getChildren().addAll(subScene);
 		
         // Listener sur le changement de valeur du slider
-        sliderMap.valueProperty().addListener(new ChangeListener<Number>(){
-
-			@Override
-			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {	
-				if((double)newValue >= (double)oldValue) {
-					camManager.changeYAngle(-3);
-				}
-				else {
-					camManager.changeYAngle(3);
-				}
-			}
+        sliderMap.valueProperty().addListener((obs, oldVal, newVal) -> {	
+        	if(newVal.doubleValue() >= oldVal.doubleValue())
+				camManager.changeYAngle(-3);
+        	else
+				camManager.changeYAngle(3);
       	});
         
         pane3DContainer.widthProperty().addListener((obs, oldVal, newVal) -> {
@@ -270,13 +232,8 @@ public class Controller implements Initializable {
         });
         
         // Listener sur le bouton + du zoom
-        btnZoomPlus.setOnAction(event -> {
-        	camManager.zoomIn(20);
-        });
-        
-        btnZoomMinus.setOnAction(event -> {
-        	camManager.zoomOut(20);
-        });
+        btnZoomPlus.setOnAction(event -> { camManager.zoomIn(20); });
+        btnZoomMinus.setOnAction(event -> { camManager.zoomOut(20); });
         
         // Cr�ation d'un gestionnaire d'�venement pour le clic ALT + Souris
         subScene.addEventHandler(MouseEvent.ANY, event -> {
@@ -287,8 +244,6 @@ public class Controller implements Initializable {
         		if (!Double.isNaN(longLatCoord.getX()) && !Double.isNaN(longLatCoord.getY())) {
         			final Location loc = new Location("Mouse click", longLatCoord.getX(), longLatCoord.getY());
         			final String locationGeohash = GeoHashHelper.getGeohash(loc);
-        			//System.out.println(locationGeohash.substring(0, 3));
-        			
         			new Thread(new Runnable() {
         			    public void run() {
         			    	speciesRecords = dp.getDetailsRecords(locationGeohash.substring(0, txtGeohash.getValue()));
@@ -302,7 +257,7 @@ public class Controller implements Initializable {
                 		        @Override
                 		        public void run() {
                         			ObservableList<String> itemsListView = FXCollections.observableArrayList(speciesNames);
-                        			listViewSpecie.setItems(itemsListView);
+                        			listViewSpecies.setItems(itemsListView);
                 		        }
                 		    };
                 		    //Permet d'excuter l'actualisation de l'UI dans le thread principal
@@ -313,11 +268,11 @@ public class Controller implements Initializable {
         	}
         });
         
-        listViewSpecie.setOnMouseClicked( event -> {
+        listViewSpecies.setOnMouseClicked( event -> {
 			if(event.getButton().equals(MouseButton.PRIMARY)){
 				if(event.getClickCount() == 2) {
 //	                afficheRegionMap((String) listViewSpecie.getSelectionModel().getSelectedIndex());
-					String selectedSpecies = (String) listViewSpecie.getSelectionModel().getSelectedItem();
+					String selectedSpecies = (String) listViewSpecies.getSelectionModel().getSelectedItem();
 					for (Species s : speciesRecords) {
 						if (s.getScientificName().equals(selectedSpecies)) {
 							afficheRegionMap(s.getScientificName());
@@ -326,7 +281,7 @@ public class Controller implements Initializable {
 					}
 	            }
 				else {
-					String selectedSpecies = (String) listViewSpecie.getSelectionModel().getSelectedItem();
+					String selectedSpecies = (String) listViewSpecies.getSelectionModel().getSelectedItem();
 					for (Species s : speciesRecords) {
 						if (s.getScientificName().equals(selectedSpecies)) {
 							setInfosFromRequete(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
@@ -346,7 +301,6 @@ public class Controller implements Initializable {
 			new Thread(new Runnable() {
 			    public void run() {
 			    	ArrayList<String> arr =  dp.getScientificNamesBeginWith(txtName.getText());
-        			//System.out.println(arr);
 			    	Runnable command = new Runnable() {
         		        @Override
         		        public void run() {
@@ -368,26 +322,21 @@ public class Controller implements Initializable {
 		});
 		
 		// Cr�ation d'un EventListener pour l'interaction avec btnPeriod
-		btnPeriod.setOnAction(event ->  
-    	{
-    		if(btnPeriod.isSelected()) {
+		btnPeriod.setOnAction(event -> {
+    		if(btnPeriod.isSelected())
     			setDateVisible();
-    		}
-    		else {
+    		else
     			setDateNotVisible();
-    		}
         });
 		
 		// Cr�ation d'un EventListener pour l'int�raction avec le bouton Rechercher
 		btnSearch.setOnAction(event ->
 		{
 			boolean testDate = false;
-					
 			if(btnPeriod.isSelected()) {
 				// faire des trucs avec les dates
 				testDate = true;
 			}
-
 			if(testDate) {
 				afficheRegionMapByDate(txtName.getText(), creerDate(firstDate.getValue(), 1, 1), creerDate(lastDate.getValue(), 1, 1));
 			}
@@ -425,11 +374,8 @@ public class Controller implements Initializable {
 	}
 	
 	// Fonction pour ajouter une zone
-	private void AddQuadrilateral(Group parent, Point3D topRight, Point3D bottomRight, Point3D bottomLeft,
-    		Point3D topLeft, PhongMaterial material) {
-		
-		float coef = (float)1.01;
-		
+	private void AddQuadrilateral(Group parent, Point3D topRight, Point3D bottomRight, Point3D bottomLeft, Point3D topLeft, PhongMaterial material) {
+		float coef = 1.01f;
     	topRight = new Point3D(topRight.getX()*coef, topRight.getY()*coef , topRight.getZ()*coef);
     	bottomRight = new Point3D(bottomRight.getX()*coef, bottomRight.getY()*coef , bottomRight.getZ()*coef);
     	topLeft = new Point3D(topLeft.getX()*coef, topLeft.getY()*coef , topLeft.getZ()*coef);
@@ -443,19 +389,16 @@ public class Controller implements Initializable {
     			(float) bottomLeft.getX(), (float) bottomLeft.getY(), (float) bottomLeft.getZ(),
     			(float) bottomRight.getX(), (float) bottomRight.getY(), (float) bottomRight.getZ()	
     	};
-    	
     	final float[] texCoords = {
     			1, 1,
     			1, 0,
     			0, 1,
     			0, 0		
     	};
-    	
     	final int[] faces = {
     		0, 1, 1, 0, 2, 2,
     		0, 1, 2, 2, 3, 3
     	};
-    	
     	triangleMesh.getPoints().setAll(points);
     	triangleMesh.getTexCoords().setAll(texCoords);
     	triangleMesh.getFaces().setAll(faces);
@@ -463,7 +406,6 @@ public class Controller implements Initializable {
     	final MeshView meshView = new MeshView(triangleMesh);
     	meshView.setMaterial(material);
     	parent.getChildren().addAll(meshView);
-    	
     }
 	
 	public static Affine lookAt(Point3D from, Point3D to, Point3D ydir) {
@@ -545,8 +487,6 @@ public class Controller implements Initializable {
 	}
 	
 	public void afficheRegionMap(String nameSpecie) {
-		DataProvider dp = DataProvider.getInstance();
-		
 		try {
 			gCourant.getChildren().clear();
 			Species s = dp.getNbReportsByRegion(nameSpecie);
@@ -577,22 +517,19 @@ public class Controller implements Initializable {
 	}
 	
 	public void afficheRegionMapByDate(String nameSpecie, Date from, Date to) {
-		DataProvider dp = DataProvider.getInstance();
-		
 		try {
 			gCourant.getChildren().clear();
 			Species s = dp.getNbReportsByRegion(nameSpecie, from, to);
-					
+			
 			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
 			drawCaption(s.getMinOccurrence(), s.getMaxOccurrence());
-					
+			
 			// Affichage des zones sur la mapMonde 
 			for(Region r : s.getNbReportsByRegion()){
 				// Transformation des Point2D et point3D
 				final PhongMaterial pm = new PhongMaterial();
-						
 				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
-						
+				
 				Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
 				Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
 				Point3D p3 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
@@ -607,8 +544,6 @@ public class Controller implements Initializable {
 			txtName.setStyle("fx-border-color: red;");
 		}
 	}
-	
-	
 	
 	// Fonction pour créer une date de manière clean, propre, carré dans l'axe
 	public Date creerDate(int year, int month, int day) {
