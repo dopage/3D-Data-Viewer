@@ -22,6 +22,12 @@ public class DataProvider implements DataProviderInterface {
 
 	private static DataProvider instance = null;
 	
+	private int geohashPrecision = 3;
+	
+	public void setGeohashPrecision(int i) {
+		geohashPrecision = i;
+	}
+	
 	/**
 	 * Récupère l'instance de DataProvider (singleton).
 	 * @return L'instance DataProvider
@@ -42,7 +48,7 @@ public class DataProvider implements DataProviderInterface {
 		species.setScientificName(scientificName);
 		int minOccurence = 0;
 		int maxOccurence = 0;
-		URLBuilder url = new URLBuilder("https://api.obis.org/v3/occurrence/grid/3?");
+		URLBuilder url = new URLBuilder("https://api.obis.org/v3/occurrence/grid/" + geohashPrecision + "?");
 		if (scientificName != null && !scientificName.equals("")) {
 			url.addParameter("scientificname", scientificName);
 			if (from != null && to != null) {

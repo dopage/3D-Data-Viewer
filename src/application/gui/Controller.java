@@ -81,7 +81,10 @@ public class Controller implements Initializable {
 	@FXML
 	private Spinner<Integer> lastDate;
 	
-	@FXML 
+	@FXML
+	private Spinner<Integer> txtGeohash;
+	
+	@FXML
 	private Label lblFirstDate;
 	
 	@FXML
@@ -159,6 +162,8 @@ public class Controller implements Initializable {
 	
 	Group gCourant = new Group();
 	
+	DataProvider dp = DataProvider.getInstance();
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		
@@ -178,9 +183,9 @@ public class Controller implements Initializable {
 		
 		firstDate.setValueFactory(svf);
 		lastDate.setValueFactory(svf2);
-		
-		//auto_complete(txtName);
-		
+
+		SpinnerValueFactory<Integer> svf3 = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 3, 1);
+		txtGeohash.setValueFactory(svf3);
 		
 		// Ajout de Listener sur les Spinners pour pouvoir g�rer la coh�rence de leurs valeurs
 		
@@ -200,6 +205,10 @@ public class Controller implements Initializable {
 					firstDate.decrement();
 				}
 			}
+        });
+		
+		txtGeohash.valueProperty().addListener((obs, oldVal, newVal) -> {
+			dp.setGeohashPrecision(newVal);
         });
 		
 		Group root3D = new Group();
@@ -278,14 +287,13 @@ public class Controller implements Initializable {
         		Point3D spaceCoord = pickResult.getIntersectedPoint();
         		Point2D longLatCoord = SpaceCoordToGeoCoord(spaceCoord);
         		if (!Double.isNaN(longLatCoord.getX()) && !Double.isNaN(longLatCoord.getY())) {
-        			DataProvider dp = DataProvider.getInstance();
         			final Location loc = new Location("Mouse click", longLatCoord.getX(), longLatCoord.getY());
         			final String locationGeohash = GeoHashHelper.getGeohash(loc);
         			//System.out.println(locationGeohash.substring(0, 3));
         			
         			new Thread(new Runnable() {
         			    public void run() {
-        			    	speciesRecords = dp.getDetailsRecords(locationGeohash.substring(0, 3));
+        			    	speciesRecords = dp.getDetailsRecords(locationGeohash.substring(0, txtGeohash.getValue()));
                 			System.out.println("Nb species recorded : " + speciesRecords.size());
                 			ArrayList<String> speciesNames = new ArrayList<String>();
                 			for (Species s : speciesRecords)
@@ -325,7 +333,6 @@ public class Controller implements Initializable {
         
 		// Cr�ation d'un Listener pour le textField via sa fonction textProperty()
 		txtName.textProperty().addListener((ov, t, t1) -> {
-			DataProvider dp = DataProvider.getInstance();
 			if(t1.equals(""))
 	       	   btnSearch.setDisable(true);
 			else
@@ -333,35 +340,18 @@ public class Controller implements Initializable {
 			
 			new Thread(new Runnable() {
 			    public void run() {
-			    	/*
-			    	if (suggestionProvider != null) {
-    		        	//suggestionProvider.clearSuggestions();
-			    	}
-			    	*/
 			    	ArrayList<String> arr =  dp.getScientificNamesBeginWith(txtName.getText());
-        			System.out.println(arr);
 			    	Runnable command = new Runnable() {
         		        @Override
         		        public void run() {
-        		        	// let's suppose initially we have this possible values:
         		        	if (suggestionProvider == null) {
         		        		suggestionProvider = SuggestionProvider.create(arr);
         		        		new AutoCompletionTextFieldBinding<>(txtName, suggestionProvider);		
         		        	}
         		        	else {
-        		        		System.out.println("change sugg");
             		        	suggestionProvider.clearSuggestions();
             		        	suggestionProvider.addPossibleSuggestions(arr);
         		        	}
-        		        	/*
-        		        	if (acbResearch != null) {
-        		        		//System.out.println("on dispose");
-        		        		//acbResearch.dispose();
-        		        	}
-        		        	else {
-        		        		acbResearch = TextFields.bindAutoCompletion(txtName, arr);	
-        		        	}
-        		        	*/
         		        }
         		    };
         		    //Permet d'excuter l'actualisation de l'UI dans le thread principal
@@ -383,7 +373,6 @@ public class Controller implements Initializable {
         });
 		
 		// Cr�ation d'un EventListener pour l'int�raction avec le bouton Rechercher
-		// Cr�ation d'un EventListener pour l'int�raction avec le bouton Rechercher
 		btnSearch.setOnAction(event ->
 		{
 			boolean testDate = false;
@@ -396,9 +385,7 @@ public class Controller implements Initializable {
 			if(testDate) {
 						
 			}
-			else {
-				DataProvider dp = DataProvider.getInstance();
-						
+			else {	
 				try {
 					gCourant.getChildren().clear();
 					Species s = dp.getNbReportsByRegion(txtName.getText());
