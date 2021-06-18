@@ -2,7 +2,9 @@ package application.gui;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 import org.controlsfx.control.textfield.AutoCompletionBinding;
@@ -391,7 +393,7 @@ public class Controller implements Initializable {
 			}
 
 			if(testDate) {
-						
+				afficheRegionMapByDate(txtName.getText(), creerDate(firstDate.getValue(), 1, 1), creerDate(lastDate.getValue(), 1, 1));
 			}
 			else {
 				afficheRegionMap(txtName.getText());
@@ -596,8 +598,7 @@ public class Controller implements Initializable {
 				Point3D p2 = geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
 				Point3D p3 = geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
 				Point3D p4 = geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
-						
-						
+				
 				AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
 			}
 					
@@ -607,6 +608,48 @@ public class Controller implements Initializable {
 			txtName.setStyle("fx-border-color: red;");
 		}
 	}
+	
+	public void afficheRegionMapByDate(String nameSpecie, Date from, Date to) {
+		DataProvider dp = DataProvider.getInstance();
+		
+		try {
+			gCourant.getChildren().clear();
+			Species s = dp.getNbReportsByRegion(nameSpecie, from, to);
+					
+			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
+			drawCaption(s.getMinOccurrence(), s.getMaxOccurrence());
+					
+			// Affichage des zones sur la mapMonde 
+			for(Region r : s.getNbReportsByRegion()){
+				// Transformation des Point2D et point3D
+				final PhongMaterial pm = new PhongMaterial();
+						
+				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
+						
+				Point3D p1 = geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
+				Point3D p2 = geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
+				Point3D p3 = geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
+				Point3D p4 = geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
+				
+				AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
+			}
+					
+		} catch (UnknownSpeciesException e) {
+			e.printStackTrace();
+			System.err.println("Erreur dans la requete getNbReportsByRegion");
+			txtName.setStyle("fx-border-color: red;");
+		}
+	}
+	
+	
+	
+	// Fonction pour créer une date de manière clean, propre, carré dans l'axe
+	public Date creerDate(int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, day);
+        Date date = calendar.getTime();
+        return date;
+    }
 	
 	// faire un chargement pour avertir l'utilisateur qu'il doit attendre pour avoir ses résultats.
 

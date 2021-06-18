@@ -101,9 +101,11 @@ public class DataProvider implements DataProviderInterface {
 				calendar.add(Calendar.YEAR, intervalDuration);
 				Date intervalTo = calendar.getTime();
 				species.add(this.getNbReportsByRegion(scientificName, intervalFrom, intervalTo));
+				
+//				quand on va faire la requete entre 2 dates on va recuperer les resultats 
 			}
 		}
-		// Pour résumer, le tableau "species" va être de taille "nbIntervals" et va contenir
+		// Pour r�sumer, le tableau "species" va être de taille "nbIntervals" et va contenir
 		// des instances de la classe "Species" pour des intervalles de temps différents 
 		return species;
 	}
