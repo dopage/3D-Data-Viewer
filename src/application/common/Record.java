@@ -4,11 +4,10 @@ public class Record {
 
 	private String eventDate;
 	private String recorderBy;
-	private int shoreDistance;
-	private int bathymetry;
+	private Integer shoreDistance;
+	private Integer bathymetry;
 	
 	public Record(String eventDate, String recorderBy, int shoreDistance, int bathymetry) {
-		super();
 		this.eventDate = eventDate;
 		this.recorderBy = recorderBy;
 		this.shoreDistance = shoreDistance;
@@ -16,20 +15,25 @@ public class Record {
 	}
 
 	public String getEventDate() {
+		if (eventDate == null)
+			return "Inconnu";
 		return eventDate;
 	}
 
-	public int getShoreDistance() {
+	public String getRecorderBy() {
+		if (recorderBy == null)
+			return "Inconnu";
+		return recorderBy;
+	}
+	
+	public Integer getShoreDistance() {
 		return shoreDistance;
 	}
 
-	public int getBathymetry() {
+	public Integer getBathymetry() {
 		return bathymetry;
 	}
 	
-	public String getRecorderBy() {
-		return recorderBy;
-	}
 	
 	@Override
 	public String toString() {

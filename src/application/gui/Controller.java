@@ -148,10 +148,11 @@ public class Controller implements Initializable {
 	@FXML
 	private Pane pane3DContainer;
 
-	ArrayList<Species> speciesRecords = new ArrayList<Species>();
-	SuggestionProvider<String> suggestionProvider;
-	Group gCourant = new Group();
-	DataProvider dp = DataProvider.getInstance();
+	private ArrayList<Species> speciesRecords = new ArrayList<Species>();
+	private SuggestionProvider<String> suggestionProvider;
+	private Group gCourant = new Group();
+	private DataProvider dp = DataProvider.getInstance();
+	private int lastSelectedZoneRequestID = 0;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -256,10 +257,15 @@ public class Controller implements Initializable {
         		Point3D spaceCoord = pickResult.getIntersectedPoint();
         		Point2D longLatCoord = CoordConverter.SpaceCoordToGeoCoord(spaceCoord);
         		if (!Double.isNaN(longLatCoord.getX()) && !Double.isNaN(longLatCoord.getY())) {
+        			setSpeciesInfos("", "", "", "");
+        			tableRecords.setItems(null);
+        			listViewSpecies.setItems(FXCollections.observableArrayList("Chargement..."));
         			final Location loc = new Location("Mouse click", longLatCoord.getX(), longLatCoord.getY());
         			final String locationGeohash = GeoHashHelper.getGeohash(loc);
         			new Thread(new Runnable() {
         			    public void run() {
+        			    	lastSelectedZoneRequestID++;
+        			    	int requestID = lastSelectedZoneRequestID;
         			    	speciesRecords = dp.getDetailsRecords(locationGeohash.substring(0, txtGeohash.getValue()));
                 			System.out.println("Nb species recorded : " + speciesRecords.size());
                 			ArrayList<String> speciesNames = new ArrayList<String>();
@@ -270,8 +276,10 @@ public class Controller implements Initializable {
                 			Runnable command = new Runnable() {
                 		        @Override
                 		        public void run() {
-                        			ObservableList<String> itemsListView = FXCollections.observableArrayList(speciesNames);
-                        			listViewSpecies.setItems(itemsListView);
+                		        	if (lastSelectedZoneRequestID == requestID) {
+                		        		ObservableList<String> itemsListView = FXCollections.observableArrayList(speciesNames);
+                		        		listViewSpecies.setItems(itemsListView);
+                		        	}
                 		        }
                 		    };
                 		    //Permet d'excuter l'actualisation de l'UI dans le thread principal
@@ -304,7 +312,7 @@ public class Controller implements Initializable {
         listViewSpecies.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
         	for (Species s : speciesRecords) {
 				if (s.getScientificName().equals(newVal)) {
-					setInfosFromRequete(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
+					setSpeciesInfos(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
 				    ObservableList<Record> itemsListView = FXCollections.observableArrayList(s.getRecords());
 				    tableRecords.setItems(itemsListView);
 				}
@@ -376,8 +384,8 @@ public class Controller implements Initializable {
 		btnSearch.setOnAction(event -> {
 			//On vérifie si l'utilsateur a selectionné un interval de temps
 			if(btnPeriod.isSelected()) {
-				Date d1 = creerDate(firstDate.getValue(), 1, 1);
-				Date d2 = creerDate(lastDate.getValue(), 1, 1);
+				Date d1 = createDate(firstDate.getValue(), 1, 1);
+				Date d2 = createDate(lastDate.getValue(), 1, 1);
 				
 				afficheRegionMapByDate(txtName.getText(), d1, d2);
 				
@@ -393,7 +401,7 @@ public class Controller implements Initializable {
 		});
 		
 		btnPlay.setOnAction(event ->{
-			animation(getNbIntervalsBetween(creerDate(firstDate.getValue(), 1, 1), creerDate(lastDate.getValue(), 1, 1), 5), creerDate(firstDate.getValue(), 1, 1));
+			animation(getNbIntervalsBetween(createDate(firstDate.getValue(), 1, 1), createDate(lastDate.getValue(), 1, 1), 5), createDate(firstDate.getValue(), 1, 1));
 		});
 	}
 	
@@ -412,7 +420,7 @@ public class Controller implements Initializable {
 	 * @param superclass la superclass de l'espèce
 	 * @param order l'order de l'espèce
 	 */
-	public void setInfosFromRequete(String specieName, String scientificName, String superclass, String order) {
+	public void setSpeciesInfos(String specieName, String scientificName, String superclass, String order) {
 		if (specieName != null)
 			txtNameInfo.setText(specieName);
 		else
@@ -644,7 +652,7 @@ public class Controller implements Initializable {
 	 * @param day le jour de la date
 //	 * @return un objet de type DATE avec les valeurs en paramètres
 	 */
-	public Date creerDate(int year, int month, int day) {
+	public Date createDate(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
         Date date = calendar.getTime();

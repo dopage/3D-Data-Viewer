@@ -172,8 +172,8 @@ public class DataProvider implements DataProviderInterface {
 				}
 				String eventDate = null;
 				String recordedBy = null;
-				int shoreDistance = -1;
-				int bathymetry = -1;
+				Integer shoreDistance = null;
+				Integer bathymetry = null;
 				if (!recordJSON.isNull("eventDate"))
 					eventDate = recordJSON.getString("eventDate");
 				if (!recordJSON.isNull("recordedBy"))
@@ -230,8 +230,8 @@ public class DataProvider implements DataProviderInterface {
 							espece_existante = true;
 							String eventDate = null;
 							String recordedBy = null;
-							int shoreDistance = -1;
-							int bathymetry = -1;
+							Integer shoreDistance = null;
+							Integer bathymetry = null;
 							if (!recordJSON.isNull("eventDate"))
 								eventDate = recordJSON.getString("eventDate");
 							if (!recordJSON.isNull("recordedBy"))
@@ -256,8 +256,8 @@ public class DataProvider implements DataProviderInterface {
 							s.setSuperClass(recordJSON.getString("superclass"));
 						String eventDate = null;
 						String recordedBy = null;
-						int shoreDistance = -1;
-						int bathymetry = -1;
+						Integer shoreDistance = null;
+						Integer bathymetry = null;
 						if (!recordJSON.isNull("eventDate"))
 							eventDate = recordJSON.getString("eventDate");
 						if (!recordJSON.isNull("recordedBy"))
