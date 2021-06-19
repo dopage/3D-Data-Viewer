@@ -105,7 +105,7 @@ public class DataProvider implements DataProviderInterface {
 //				quand on va faire la requete entre 2 dates on va recuperer les resultats 
 			}
 		}
-		// Pour r�sumer, le tableau "species" va être de taille "nbIntervals" et va contenir
+		// Pour r�sumer, le tableau "species" va être de taille "nbIntervals" et va contenir
 		// des instances de la classe "Species" pour des intervalles de temps différents 
 		return species;
 	}
@@ -170,10 +170,19 @@ public class DataProvider implements DataProviderInterface {
 					if (!recordJSON.isNull("superclass"))
 						species.setSuperClass(recordJSON.getString("superclass"));
 				}
+				String eventDate = null;
 				String recordedBy = null;
+				int shoreDistance = -1;
+				int bathymetry = -1;
+				if (!recordJSON.isNull("eventDate"))
+					eventDate = recordJSON.getString("eventDate");
 				if (!recordJSON.isNull("recordedBy"))
 					recordedBy = recordJSON.getString("recordedBy");
-				Record record = new Record(recordedBy);
+				if (!recordJSON.isNull("shoredistance"))
+					shoreDistance = recordJSON.getInt("shoredistance");
+				if (!recordJSON.isNull("bathymetry"))
+					bathymetry = recordJSON.getInt("bathymetry");
+				Record record = new Record(eventDate, recordedBy, shoreDistance, bathymetry);
 				species.addRecord(record);
 			}
 			species.setMinOccurrence(minOccurence);
@@ -219,10 +228,19 @@ public class DataProvider implements DataProviderInterface {
 						// Si une instance existe déjà pour représenter cette l'espèce, il suffit d'ajoute le "record" à sa liste
 						if (scientificName.equals(species.get(j).getScientificName())) {
 							espece_existante = true;
+							String eventDate = null;
 							String recordedBy = null;
+							int shoreDistance = -1;
+							int bathymetry = -1;
+							if (!recordJSON.isNull("eventDate"))
+								eventDate = recordJSON.getString("eventDate");
 							if (!recordJSON.isNull("recordedBy"))
 								recordedBy = recordJSON.getString("recordedBy");
-							Record record = new Record(recordedBy);
+							if (!recordJSON.isNull("shoredistance"))
+								shoreDistance = recordJSON.getInt("shoredistance");
+							if (!recordJSON.isNull("bathymetry"))
+								bathymetry = recordJSON.getInt("bathymetry");
+							Record record = new Record(eventDate, recordedBy, shoreDistance, bathymetry);
 							species.get(j).addRecord(record);
 						}
 					}
@@ -236,10 +254,19 @@ public class DataProvider implements DataProviderInterface {
 							s.setSpeciesName(recordJSON.getString("species"));
 						if (!recordJSON.isNull("superclass"))
 							s.setSuperClass(recordJSON.getString("superclass"));
+						String eventDate = null;
 						String recordedBy = null;
+						int shoreDistance = -1;
+						int bathymetry = -1;
+						if (!recordJSON.isNull("eventDate"))
+							eventDate = recordJSON.getString("eventDate");
 						if (!recordJSON.isNull("recordedBy"))
 							recordedBy = recordJSON.getString("recordedBy");
-						Record record = new Record(recordedBy);
+						if (!recordJSON.isNull("shoredistance"))
+							shoreDistance = recordJSON.getInt("shoredistance");
+						if (!recordJSON.isNull("bathymetry"))
+							bathymetry = recordJSON.getInt("bathymetry");
+						Record record = new Record(eventDate, recordedBy, shoreDistance, bathymetry);
 						s.addRecord(record);
 						species.add(s);
 					}

@@ -10,6 +10,7 @@ import java.util.ResourceBundle;
 import com.interactivemesh.jfx.importer.ImportException;
 import com.interactivemesh.jfx.importer.obj.ObjModelImporter;
 
+import application.common.Record;
 import application.common.Region;
 import application.common.Species;
 import application.dataAcess.DataProvider;
@@ -35,6 +36,7 @@ import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -53,6 +55,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.application.Platform;
 
 public class Controller implements Initializable {
@@ -104,10 +108,10 @@ public class Controller implements Initializable {
 	private Pane paneListView;
 	
 	@FXML
-	private ListView<String> listViewReport;
+	private ListView<String> listViewSpecies;
 	
 	@FXML
-	private ListView<String> listViewSpecies;
+	private TableView<Record> tableRecords;
 	
 	@FXML
 	private VBox vBoxCaptions;
@@ -157,13 +161,13 @@ public class Controller implements Initializable {
 		lblUnknownSpecies.setVisible(false);
 		
 		// Spinner Value Factory pour les spinners de Date
-		SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(1920, 2020, 1920, 5);
-		SpinnerValueFactory<Integer> svf2 = new SpinnerValueFactory.IntegerSpinnerValueFactory(1925, 2020, 1925, 5);
+		SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(1920, 2015, 1980, 5);
+		SpinnerValueFactory<Integer> svf2 = new SpinnerValueFactory.IntegerSpinnerValueFactory(1925, 2020, 2020, 5);
 		
 		firstDate.setValueFactory(svf);
 		lastDate.setValueFactory(svf2);
 
-		SpinnerValueFactory<Integer> svf3 = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 5, 3, 1);
+		SpinnerValueFactory<Integer> svf3 = new SpinnerValueFactory.IntegerSpinnerValueFactory(2, 5, 3, 1);
 		txtGeohash.setValueFactory(svf3);
 		
 		// Ajout de Listener sur les Spinners pour pouvoir g�rer la coh�rence de leurs valeurs
@@ -174,7 +178,7 @@ public class Controller implements Initializable {
         });
 		
 		lastDate.valueProperty().addListener((obs, oldVal, newVal) -> {
-			if(lastDate.getValue() >= newVal)
+			if(firstDate.getValue() >= newVal)
 				firstDate.decrement();
         });
 		
@@ -273,10 +277,31 @@ public class Controller implements Initializable {
         	}
         });
         
+        // Initialisation la tableView
+		// On crée nos colonnes
+	    TableColumn<Record, String> eventDateCol = new TableColumn<Record, String>("EventDate");
+	    TableColumn<Record, String> recordedByCol = new TableColumn<Record, String>("RecordedBy");
+	    TableColumn<Record, Integer> shoreDistanceCol = new TableColumn<Record, Integer>("ShoreDistance");
+	    TableColumn<Record, Integer> bathymetryCol = new TableColumn<Record, Integer>("Bathymetry");
+	    
+	    // On les ajoute à notre tableView
+	    tableRecords.getColumns().add(eventDateCol);
+	    tableRecords.getColumns().add(recordedByCol);
+	    tableRecords.getColumns().add(shoreDistanceCol);
+	    tableRecords.getColumns().add(bathymetryCol);
+	    
+	    // On définie comment remplir les données de chaque cellule
+	    eventDateCol.setCellValueFactory(new PropertyValueFactory<>("eventDate"));
+	    recordedByCol.setCellValueFactory(new PropertyValueFactory<>("recorderBy"));
+	    shoreDistanceCol.setCellValueFactory(new PropertyValueFactory<>("shoreDistance"));
+	    bathymetryCol.setCellValueFactory(new PropertyValueFactory<>("bathymetry"));
+	    
         listViewSpecies.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
         	for (Species s : speciesRecords) {
 				if (s.getScientificName().equals(newVal)) {
-					setInfosFromRequete(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
+					setSpeciesInfos(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
+				    ObservableList<Record> itemsListView = FXCollections.observableArrayList(s.getRecords());
+				    tableRecords.setItems(itemsListView);
 				}
 			}
         });
@@ -362,7 +387,7 @@ public class Controller implements Initializable {
 		paneDate.setVisible(false);
 	}
 	
-	public void setInfosFromRequete(String specieName, String scientificName, String superclass, String order) {
+	public void setSpeciesInfos(String specieName, String scientificName, String superclass, String order) {
 		if (specieName != null)
 			txtNameInfo.setText(specieName);
 		else
@@ -560,6 +585,12 @@ public class Controller implements Initializable {
         Date date = calendar.getTime();
         return date;
     }
+	
+	public int getYear(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(Calendar.YEAR);
+	}
 	
 	// faire un chargement pour avertir l'utilisateur qu'il doit attendre pour avoir ses résultats.
 
