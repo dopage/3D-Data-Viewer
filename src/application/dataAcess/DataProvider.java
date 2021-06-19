@@ -102,7 +102,7 @@ public class DataProvider implements DataProviderInterface {
 				Date intervalTo = calendar.getTime();
 				species.add(this.getNbReportsByRegion(scientificName, intervalFrom, intervalTo));
 				
-//				quand on va faire la requete entre 2 dates on va recuperer les resultats 
+				//quand on va faire la requete entre 2 dates on va recuperer les resultats 
 			}
 		}
 		// Pour r�sumer, le tableau "species" va être de taille "nbIntervals" et va contenir

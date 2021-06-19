@@ -160,6 +160,11 @@ public class Controller implements Initializable {
 		paneDate.setVisible(false);
 		lblUnknownSpecies.setVisible(false);
 		
+		// Les boutons Play, Pause et Stop sont disable tant qu'aucune recherche bornée par des dates ne sont faites.-
+		btnPlay.setDisable(true);
+		btnPause.setDisable(true);
+		btnStop.setDisable(true);
+		
 		// Spinner Value Factory pour les spinners de Date
 		SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(1920, 2015, 1980, 5);
 		SpinnerValueFactory<Integer> svf2 = new SpinnerValueFactory.IntegerSpinnerValueFactory(1925, 2020, 2020, 5);
@@ -299,7 +304,7 @@ public class Controller implements Initializable {
         listViewSpecies.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
         	for (Species s : speciesRecords) {
 				if (s.getScientificName().equals(newVal)) {
-					setSpeciesInfos(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
+					setInfosFromRequete(s.getSpeciesName(), s.getScientificName(), s.getSuperClass(), s.getOrder());
 				    ObservableList<Record> itemsListView = FXCollections.observableArrayList(s.getRecords());
 				    tableRecords.setItems(itemsListView);
 				}
@@ -371,11 +376,24 @@ public class Controller implements Initializable {
 		btnSearch.setOnAction(event -> {
 			//On vérifie si l'utilsateur a selectionné un interval de temps
 			if(btnPeriod.isSelected()) {
-				afficheRegionMapByDate(txtName.getText(), creerDate(firstDate.getValue(), 1, 1), creerDate(lastDate.getValue(), 1, 1));
+				Date d1 = creerDate(firstDate.getValue(), 1, 1);
+				Date d2 = creerDate(lastDate.getValue(), 1, 1);
+				
+				afficheRegionMapByDate(txtName.getText(), d1, d2);
+				
+				//System.out.println(getNbIntervalsBetween(d1,d2,5));
+				
+				btnPlay.setDisable(false);
+				btnStop.setDisable(false);
+				btnPause.setDisable(false);
 			}
 			else {
 				afficheRegionMap(txtName.getText());
 			}
+		});
+		
+		btnPlay.setOnAction(event ->{
+			animation(getNbIntervalsBetween(creerDate(firstDate.getValue(), 1, 1), creerDate(lastDate.getValue(), 1, 1), 5), creerDate(firstDate.getValue(), 1, 1));
 		});
 	}
 	
@@ -387,7 +405,14 @@ public class Controller implements Initializable {
 		paneDate.setVisible(false);
 	}
 	
-	public void setSpeciesInfos(String specieName, String scientificName, String superclass, String order) {
+	/**
+	 * Fonction qui set les infos d'une espèce sélectionnée dans l'espace associé
+	 * @param specieName la nomde l'espèce
+	 * @param scientificName le nom scientifique de l'espèce
+	 * @param superclass la superclass de l'espèce
+	 * @param order l'order de l'espèce
+	 */
+	public void setInfosFromRequete(String specieName, String scientificName, String superclass, String order) {
 		if (specieName != null)
 			txtNameInfo.setText(specieName);
 		else
@@ -406,7 +431,15 @@ public class Controller implements Initializable {
 			txtOrderInfo.setText("Inconnu");
 	}
 	
-	// Fonction pour ajouter une zone
+	/**
+	 * Fonction qui dessine un quadrilatère
+	 * @param parent le group dans lequel le quadrilatère sera déssiné
+	 * @param topRight le point en haut a droite du quadrilatère
+	 * @param bottomRight le point en bas à droite du quadrilatère
+	 * @param bottomLeft le point en bas à gauche du quadrilatère
+	 * @param topLeft le point en haut à gauche du quadrilatère
+	 * @param material le matériel du quadrilatère (sa couleur)
+	 */
 	private void AddQuadrilateral(Group parent, Point3D topRight, Point3D bottomRight, Point3D bottomLeft, Point3D topLeft, PhongMaterial material) {
 		float coef = 1.01f;
     	topRight = new Point3D(topRight.getX()*coef, topRight.getY()*coef , topRight.getZ()*coef);
@@ -465,11 +498,11 @@ public class Controller implements Initializable {
     	parent.getChildren().addAll(townGroup);
     }
 	
-	// Fonction qui trace une zone sur la map-monde grâce a des coordonnées (récupérées grâce à une requete de Rayane)
-	public void afficheRegionMap(Region r) {
-		
-	}
-	
+	/**
+	 * Fonction qui dessine dynamiquement la légende dans le pane Associé
+	 * @param min le minimum d'occurence de l'espèce étudiée
+	 * @param max le maximum d'occurence de l'espèce étudiée
+	 */
 	public void drawCaption(int min, int max) {
 		int nbCaptions = 8;
 		vBoxCaptions.getChildren().clear();
@@ -499,6 +532,14 @@ public class Controller implements Initializable {
 		}
 	}
 	
+	/**
+	 * Fonction qui retourne la couleur de la zone affichée sur la map. Cette couleur est liée a une couleur de la légende
+	 * @param nbCaptions le nombre de légende que l'on a en tout
+	 * @param min le minimum d'occurence de l'espèce étudiée.
+	 * @param max le maximum d'occurence de l'espèce étudiée.
+	 * @param val la valeur 
+	 * @return la couleur de la région associée a son nombre d'occurence.
+	 */
 	public Color getColorforQuadri(int nbCaptions, int min, int max, int val) {
 		for (int i = 0; i < nbCaptions; i++) {
 			float r = 0 + 1 * (float)(i)/8;
@@ -518,6 +559,23 @@ public class Controller implements Initializable {
 		}
 		return Color.BLUE;
 	}
+	
+	public void afficheRegionMap(Species s) {
+		gCourant.getChildren().clear();
+		for(Region r : s.getNbReportsByRegion()) {
+			final PhongMaterial pm = new PhongMaterial();
+			
+			pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
+			
+			Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
+			Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
+			Point3D p3 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
+			Point3D p4 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
+			
+			AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
+		}
+	}
+	
 	
 	public void afficheRegionMap(String nameSpecie) {
 		try {
@@ -578,7 +636,14 @@ public class Controller implements Initializable {
 		}
 	}
 	
-	// Fonction pour créer une date de manière clean, propre, carré dans l'axe
+
+	/**
+	 * Fonction pour créer une date de manière propre
+	 * @param year l'année de la date
+	 * @param month le mois de la date
+	 * @param day le jour de la date
+//	 * @return un objet de type DATE avec les valeurs en paramètres
+	 */
 	public Date creerDate(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
@@ -586,12 +651,56 @@ public class Controller implements Initializable {
         return date;
     }
 	
-	public int getYear(Date date) {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(date);
-		return calendar.get(Calendar.YEAR);
-	}
-	
 	// faire un chargement pour avertir l'utilisateur qu'il doit attendre pour avoir ses résultats.
 
+	public void animation(int nbIntervals, Date d1) {
+		
+		DataProvider dp = DataProvider.getInstance();
+		ArrayList<Species> tabSpecies = new ArrayList<Species>();
+		
+		try {
+			tabSpecies = dp.getNbReportsByRegionByTimeInterval(txtName.getText(), null, d1, 5, nbIntervals);
+		} catch (UnknownSpeciesException e) {
+			e.printStackTrace();
+		}
+		
+		for(Species s : tabSpecies) {
+			// Dans tabSpecies on a une instance d'espèce qui correspond a un intervalle de temps (5 ans).
+			// Il suffit maintenant que l'on affiche les données de ces espèces toutes les 5 secondes et ça fera une animation :
+//			try {
+//				System.out.println("je sleep");
+//				Thread.sleep(5000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			System.out.println("j'affiche les map");
+//			afficheRegionMap(s);
+			System.out.println("Espece de l'intervalle ----> " + s );
+			
+			
+		}
+	}
+	
+	/**
+	 * Fonction qui retourne le nombre d'intervalle d'une durée 'pas' entre deux dates d1 et d2 
+	 * @param d1 la date de début
+	 * @param d2 la date de fin
+	 * @param pas : la valeur du pas de l'intervalle. Dans notre cas : 5 car on veut qu'un intervalle soit de 5 ans.
+	 * @return
+	 */
+	public int getNbIntervalsBetween(Date d1, Date d2, int pas) {
+		return (getYear(d2) - getYear(d1)) / pas;
+	}
+	
+	/**
+	 * Retourne l'année d'une Date de manière propre
+	 * @param date la date en question
+	 * @return l'année de la date en question
+	 */
+	public int getYear(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar.get(Calendar.YEAR);
+    }
 }
