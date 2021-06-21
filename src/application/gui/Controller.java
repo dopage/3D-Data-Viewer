@@ -231,10 +231,8 @@ public class Controller implements Initializable {
 		
         // Listener sur le changement de valeur du slider
         sliderMap.valueProperty().addListener((obs, oldVal, newVal) -> {	
-        	if(newVal.doubleValue() >= oldVal.doubleValue())
-				camManager.changeYAngle(-3);
-        	else
-				camManager.changeYAngle(3);
+        	double delta = newVal.doubleValue() - oldVal.doubleValue();
+        	camManager.changeYAngle(360 * delta);
       	});
         
         pane3DContainer.widthProperty().addListener((obs, oldVal, newVal) -> {
@@ -449,7 +447,8 @@ public class Controller implements Initializable {
 	 * @param material le matériel du quadrilatère (sa couleur)
 	 */
 	private void AddQuadrilateral(Group parent, Point3D topRight, Point3D bottomRight, Point3D bottomLeft, Point3D topLeft, PhongMaterial material) {
-		float coef = 1.01f;
+		float coef = 1.0025f;
+		
     	topRight = new Point3D(topRight.getX()*coef, topRight.getY()*coef , topRight.getZ()*coef);
     	bottomRight = new Point3D(bottomRight.getX()*coef, bottomRight.getY()*coef , bottomRight.getZ()*coef);
     	topLeft = new Point3D(topLeft.getX()*coef, topLeft.getY()*coef , topLeft.getZ()*coef);
@@ -570,10 +569,11 @@ public class Controller implements Initializable {
 	
 	public void afficheRegionMap(Species s) {
 		gCourant.getChildren().clear();
+		int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
+		drawCaption(s.getMinOccurrence(), averageTop10Perc);
 		for(Region r : s.getNbReportsByRegion()) {
 			final PhongMaterial pm = new PhongMaterial();
-			
-			pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
+			pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
 			
 			Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
 			Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
@@ -584,21 +584,20 @@ public class Controller implements Initializable {
 		}
 	}
 	
-	
-	public void afficheRegionMap(String nameSpecie) {
+	public void afficheRegionMap(String nameSpecies) {
 		try {
 			gCourant.getChildren().clear();
-			Species s = dp.getNbReportsByRegion(nameSpecie);
-					
+			Species s = dp.getNbReportsByRegion(nameSpecies);
+			
 			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
-			drawCaption(s.getMinOccurrence(), s.getMaxOccurrence());
-					
+			int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
+			drawCaption(s.getMinOccurrence(), averageTop10Perc);
+			
 			// Affichage des zones sur la mapMonde 
 			for(Region r : s.getNbReportsByRegion()){
 				// Transformation des Point2D et point3D
 				final PhongMaterial pm = new PhongMaterial();
-						
-				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
+				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
 				
 				Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
 				Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
@@ -615,19 +614,20 @@ public class Controller implements Initializable {
 		}
 	}
 	
-	public void afficheRegionMapByDate(String nameSpecie, Date from, Date to) {
+	public void afficheRegionMapByDate(String nameSpecies, Date from, Date to) {
 		try {
 			gCourant.getChildren().clear();
-			Species s = dp.getNbReportsByRegion(nameSpecie, from, to);
+			Species s = dp.getNbReportsByRegion(nameSpecies, from, to);
 			
 			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
-			drawCaption(s.getMinOccurrence(), s.getMaxOccurrence());
+			int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
+			drawCaption(s.getMinOccurrence(), averageTop10Perc);
 			
 			// Affichage des zones sur la mapMonde 
 			for(Region r : s.getNbReportsByRegion()) {
 				// Transformation des Point2D et point3D
 				final PhongMaterial pm = new PhongMaterial();
-				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), s.getMaxOccurrence(), r.getNbReports()));
+				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
 				
 				Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
 				Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
@@ -644,6 +644,25 @@ public class Controller implements Initializable {
 		}
 	}
 	
+
+	/**
+	 Permet de calculer la valeur moyenne du top 10% des signalements les plus élevés
+	 * @param arrRegions : la liste des regions
+	 * @return : retourne la moyenne du top 10%
+	 */
+	public int getAverageTop10Pec(ArrayList<Region> arrRegions) {
+		int averageTop10Perc = 0;
+		int nbElTop10Perc = Math.round(arrRegions.size() * 0.1f);
+		arrRegions.sort((o1, o2) -> {
+			return Integer.compare(o2.getNbReports(), o1.getNbReports());
+		});
+		for (int i = 0; i < nbElTop10Perc; i++) {
+			averageTop10Perc += arrRegions.get(i).getNbReports();
+		}
+		if (nbElTop10Perc > 0)
+			averageTop10Perc /= nbElTop10Perc;
+		return averageTop10Perc;
+	}
 
 	/**
 	 * Fonction pour créer une date de manière propre
