@@ -7,7 +7,7 @@ public class Record {
 	private Integer shoreDistance;
 	private Integer bathymetry;
 	
-	public Record(String eventDate, String recorderBy, int shoreDistance, int bathymetry) {
+	public Record(String eventDate, String recorderBy, Integer shoreDistance, Integer bathymetry) {
 		this.eventDate = eventDate;
 		this.recorderBy = recorderBy;
 		this.shoreDistance = shoreDistance;
@@ -34,11 +34,13 @@ public class Record {
 		return bathymetry;
 	}
 	
-	
 	@Override
 	public String toString() {
-		String str = "";
-		
-		return str;
+		StringBuilder str = new StringBuilder();
+		str.append("eventDate: " + eventDate);
+		str.append(" | recordedBy: " + recorderBy);
+		str.append(" | shoreDistance: " + shoreDistance);
+		str.append(" | bathymetry: " + bathymetry);
+		return str.toString();
 	}
 }

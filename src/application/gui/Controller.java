@@ -264,8 +264,7 @@ public class Controller implements Initializable {
         			    public void run() {
         			    	lastSelectedZoneRequestID++;
         			    	int requestID = lastSelectedZoneRequestID;
-        			    	speciesRecords = dp.getDetailsRecords(locationGeohash.substring(0, txtGeohash.getValue()));
-                			System.out.println("Nb species recorded : " + speciesRecords.size());
+        			    	speciesRecords = dp.getDetailsRecords(locationGeohash);
                 			ArrayList<String> speciesNames = new ArrayList<String>();
                 			for (Species s : speciesRecords)
                 				speciesNames.add(s.getScientificName());

@@ -138,7 +138,7 @@ public class DataProvider implements DataProviderInterface {
 		int minOccurence = 0;
 		int maxOccurence = 0;
 		URLBuilder url = new URLBuilder("https://api.obis.org/v3/occurrence?");
-		url.addParameter("geometry", geoHash);
+		url.addParameter("geometry", geoHash.substring(0, geohashPrecision));
 		if (scientificName != null) {
 			url.addParameter("scientificname", scientificName);
 			species.setScientificName(scientificName);
@@ -153,7 +153,7 @@ public class DataProvider implements DataProviderInterface {
 			if (!jsonRoot.isNull("error") && jsonRoot.getString("error").equals("NAME_NOT_FOUND"))
 				throw new UnknownSpeciesException();
 			JSONArray listeDesRecords = jsonRoot.getJSONArray("results");
-			System.out.println("nb records : " + listeDesRecords.length());
+			//System.out.println("nb records : " + listeDesRecords.length());
 			for (int i = 0; i < listeDesRecords.length(); i++) {
 				JSONObject recordJSON = listeDesRecords.getJSONObject(i);
 				if (i == 0) {
@@ -198,7 +198,7 @@ public class DataProvider implements DataProviderInterface {
 	public ArrayList<Species> getDetailsRecords(String geoHash, Date from, Date to) {
 		ArrayList<Species> species = new ArrayList<Species>();
 		URLBuilder url = new URLBuilder("https://api.obis.org/v3/occurrence?");
-		url.addParameter("geometry", geoHash);
+		url.addParameter("geometry", geoHash.substring(0, geohashPrecision));
 		if (from != null && to != null) {
 			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 			url.addParameter("startdate", formatter.format(from));
@@ -208,7 +208,6 @@ public class DataProvider implements DataProviderInterface {
 		try {
 			JSONObject jsonRoot = new JSONObject(JSONHelper.readJsonFromUrl(url.getUrl()));
 			JSONArray listeDesRecords = jsonRoot.getJSONArray("results");
-			System.out.println("nb records retrieve : " + listeDesRecords.length());
 			for (int i = 0; i < listeDesRecords.length(); i++) {
 				JSONObject recordJSON = listeDesRecords.getJSONObject(i);
 				// Pour chaque report, on récupère le nom scientifique de l'espèce
