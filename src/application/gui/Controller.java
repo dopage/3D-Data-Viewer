@@ -241,6 +241,7 @@ public class Controller implements Initializable {
         	pane3D.setPrefWidth(newVal.doubleValue());
         	subScene.setWidth(newVal.doubleValue());
         });
+        
         pane3DContainer.heightProperty().addListener((obs, oldVal, newVal) -> {
         	pane3D.setPrefHeight(newVal.doubleValue());
         	subScene.setHeight(newVal.doubleValue());
@@ -308,6 +309,7 @@ public class Controller implements Initializable {
 	    shoreDistanceCol.setCellValueFactory(new PropertyValueFactory<>("shoreDistance"));
 	    bathymetryCol.setCellValueFactory(new PropertyValueFactory<>("bathymetry"));
 	    
+	    // EventListener sur la liste des Espèces (après un ALT + CLIC)
         listViewSpecies.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
         	for (Species s : speciesRecords) {
 				if (s.getScientificName().equals(newVal)) {
@@ -318,6 +320,7 @@ public class Controller implements Initializable {
 			}
         });
         
+        // EventListener pour que lorsque l'on double clique sur un element de la liste, cela effectue la recherche
         listViewSpecies.setOnMouseClicked( event -> {
 			if(event.getButton().equals(MouseButton.PRIMARY)){
 				if(event.getClickCount() == 2) {
@@ -328,11 +331,14 @@ public class Controller implements Initializable {
 							afficheRegionMap(s.getScientificName());
 						}
 					}
-					btnHisto.setSelected(false);
+					if(btnHisto.isSelected()) {
+						modeHisto();
+					}
 	            }
 	        }
 		});
         
+        // EventListener pour que lorsque l'on appuie sur ENTREE cela effectue la recherche
         txtName.setOnKeyPressed( event -> {
         	if(event.getCode() == KeyCode.ENTER)
         		btnSearch.fire();
@@ -382,34 +388,29 @@ public class Controller implements Initializable {
 		
 		// Cr�ation d'un EventListener pour l'int�raction avec le bouton Rechercher
 		btnSearch.setOnAction(event -> {
-			if(btnHisto.isSelected()) {
-				modeHisto();
+			//On vérifie si l'utilsateur a selectionné un interval de temps
+			if(btnPeriod.isSelected()) {
+				Date d1 = createDate(firstDate.getValue(), 0, 1);
+				Date d2 = createDate(lastDate.getValue(), 0, 1);
+					
+				afficheRegionMapByDate(txtName.getText(), d1, d2);
+					
+				btnPlay.setDisable(false);
+				btnStop.setDisable(false);
+				btnPause.setDisable(false);
 			}
 			else {
-				//On vérifie si l'utilsateur a selectionné un interval de temps
-				if(btnPeriod.isSelected()) {
-					Date d1 = createDate(firstDate.getValue(), 0, 1);
-					Date d2 = createDate(lastDate.getValue(), 0, 1);
-					
-					afficheRegionMapByDate(txtName.getText(), d1, d2);
-					
-					//System.out.println(getNbIntervalsBetween(d1,d2,5));
-					
-					btnPlay.setDisable(false);
-					btnStop.setDisable(false);
-					btnPause.setDisable(false);
-				}
-				else {
-					afficheRegionMap(txtName.getText());
-				}
+				afficheRegionMap(txtName.getText());
+			}
+			
+			if(btnHisto.isSelected()) {
+				modeHisto();
 			}
 			
 		});
 		
-		btnPlay.setOnAction(event -> {
-			animation(getNbIntervalsBetween(createDate(firstDate.getValue(), 0, 1), createDate(lastDate.getValue(), 0, 1), 5), createDate(firstDate.getValue(), 0, 1));
-		});
 		
+		// EventListener du bouton Histogramme
 		btnHisto.setOnAction(event -> {
 			if(btnHisto.isSelected()) {
 				modeHisto();
@@ -436,10 +437,16 @@ public class Controller implements Initializable {
 		txtName.setText("Delphinidae");
 	}
 	
+	/**
+	 * Fonction qui fait en sorte que les dates soient visible par l'utilisateur
+	 */
 	public void setDateVisible() {
 		paneDate.setVisible(true);
 	}
 	
+	/**
+	 * Fonction qui fait en sorte que les dates ne soient pas visible par l'utilisateur
+	 */
 	public void setDateNotVisible() {
 		paneDate.setVisible(false);
 	}
@@ -514,6 +521,13 @@ public class Controller implements Initializable {
     	parent.getChildren().addAll(meshView);
     }
 	
+	/**
+	 * Fonction pour orienter les barres de l'histogramme vers le centre de la terre.
+	 * @param from
+	 * @param to
+	 * @param ydir
+	 * @return
+	 */
 	public static Affine lookAt(Point3D from, Point3D to, Point3D ydir) {
 	    Point3D zVec = to.subtract(from).normalize();
 	    Point3D xVec = ydir.normalize().crossProduct(zVec).normalize();
@@ -522,21 +536,6 @@ public class Controller implements Initializable {
 	                      xVec.getY(), yVec.getY(), zVec.getY(), from.getY(),
 	                      xVec.getZ(), yVec.getZ(), zVec.getZ(), from.getZ());
 	}
-	
-	public void addSphere(Group parent, String name, Point3D coord3D) {
-    	Group townGroup = new Group();
-    	townGroup.setId(name);
-    	Sphere sphere = new Sphere(0.01);
-    	final PhongMaterial greenMaterial = new PhongMaterial();
-        greenMaterial.setDiffuseColor(Color.GREEN);
-        greenMaterial.setSpecularColor(Color.GREEN);
-    	sphere.setMaterial(greenMaterial);
-    	townGroup.getChildren().add(sphere);
-    	townGroup.setTranslateX(coord3D.getX());
-    	townGroup.setTranslateY(coord3D.getY());
-    	townGroup.setTranslateZ(coord3D.getZ());
-    	parent.getChildren().addAll(townGroup);
-    }
 	
 	/**
 	 * Fonction qui dessine dynamiquement la légende dans le pane Associé
@@ -600,6 +599,14 @@ public class Controller implements Initializable {
 		return Color.BLUE;
 	}
 	
+	/**
+	 * Fonction qui retourne la couleur de la box affichée sur la map. Cette couleur est liée a une couleur de la légende
+	 * @param nbCaptions le nombre de légende que l'on a en tout
+	 * @param min le minimum d'occurence de l'espèce étudiée.
+	 * @param max le maximum d'occurence de l'espèce étudiée.
+	 * @param val la valeur 
+	 * @return la couleur de la région associée a son nombre d'occurence.
+	 */
 	public Color getColorforBox(int nbCaptions, int min, int max, int val) {
 		for (int i = 0; i < nbCaptions; i++) {
 			float r = 1 - (float)(i)/8;
@@ -620,6 +627,10 @@ public class Controller implements Initializable {
 		return Color.BLUE;
 	}
 	
+	/**
+	 * Fonction pour afficher les régions sur la map via l'instance d'une espèce
+	 * @param s l'instance d'espèce
+	 */
 	public void afficheRegionMap(Species s) {
 		gCourant.getChildren().clear();
 		int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
@@ -637,6 +648,11 @@ public class Controller implements Initializable {
 		}
 	}
 	
+	/**
+	 * Fonction pour afficher les régions sur le map via un fichier json
+	 * @param path le chemin du fichier json
+	 * @param scientificName le nom de l'espèce
+	 */
 	public void showRegionsMapFromFile(String path, String scientificName) {
 		try {
 			gCourant.getChildren().clear();
@@ -666,6 +682,10 @@ public class Controller implements Initializable {
 		}
 	}
 	
+	/**
+	 * Fonction pour afficher les régions sur la map via le nom d'un espèces
+	 * @param nameSpecies le nom de l'espèce
+	 */
 	public void afficheRegionMap(String nameSpecies) {
 		try {
 			gCourant.getChildren().clear();
@@ -696,6 +716,12 @@ public class Controller implements Initializable {
 		}
 	}
 	
+	/**
+	 * Fonction pour afficher les régions sur la map avec un intervalle de date
+	 * @param nameSpecies le nom de l'espèce
+	 * @param from 
+	 * @param to
+	 */
 	public void afficheRegionMapByDate(String nameSpecies, Date from, Date to) {
 		try {
 			gCourant.getChildren().clear();
@@ -760,37 +786,6 @@ public class Controller implements Initializable {
         return date;
     }
 	
-	// faire un chargement pour avertir l'utilisateur qu'il doit attendre pour avoir ses résultats.
-
-	public void animation(int nbIntervals, Date d1) {
-		
-		DataProvider dp = DataProvider.getInstance();
-		ArrayList<Species> tabSpecies = new ArrayList<Species>();
-		
-		try {
-			tabSpecies = dp.getNbReportsByRegionByTimeInterval(txtName.getText(), d1, 5, nbIntervals);
-		} catch (UnknownSpeciesException e) {
-			e.printStackTrace();
-		}
-		
-		for(Species s : tabSpecies) {
-			// Dans tabSpecies on a une instance d'espèce qui correspond a un intervalle de temps (5 ans).
-			// Il suffit maintenant que l'on affiche les données de ces espèces toutes les 5 secondes et ça fera une animation :
-//			try {
-//				System.out.println("je sleep");
-//				Thread.sleep(5000);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			System.out.println("j'affiche les map");
-//			afficheRegionMap(s);
-			System.out.println("Espece de l'intervalle ----> " + s );
-			
-			
-		}
-	}
-	
 	/**
 	 * Fonction qui retourne le nombre d'intervalle d'une durée 'pas' entre deux dates d1 et d2 
 	 * @param d1 la date de début
@@ -813,6 +808,9 @@ public class Controller implements Initializable {
         return calendar.get(Calendar.YEAR);
     }
 	
+	/**
+	 * Fonction pour passer au mode Histogramme
+	 */
 	public void modeHisto() {
 		gCourant.getChildren().clear();
 		
@@ -854,10 +852,28 @@ public class Controller implements Initializable {
 		}
 	}
 	
+	/**
+	 * Fonction qui calcule la distance entre deux points via leurs coordonnées
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @return la distance entre les 2 points
+	 */
 	static public float Distance(double x1, double y1, double x2, double y2) {
         return (float)Math.sqrt(Math.pow((y2 - y1), 2) + Math.pow((x2 - x1),2));
     }
 	
+	/**
+	 * Fonction qui ajoute une box (parallépipède) a un Group
+	 * @param parent le group 
+	 * @param lon la longitude 
+	 * @param lat la latitude
+	 * @param size la taille (hauteur) de la box
+	 * @param x la longueur x 
+	 * @param y la longueur y (en fait c'est la z)
+	 * @param m la couleur (=le materiel) de la box
+	 */
 	public void AddBox(Group parent, float lon, float lat, float size, float x, float y, PhongMaterial m) {
 		Group g = new Group();
 		Affine a = new Affine();
