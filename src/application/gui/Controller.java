@@ -382,8 +382,8 @@ public class Controller implements Initializable {
 		btnSearch.setOnAction(event -> {
 			//On vérifie si l'utilsateur a selectionné un interval de temps
 			if(btnPeriod.isSelected()) {
-				Date d1 = createDate(firstDate.getValue(), 1, 1);
-				Date d2 = createDate(lastDate.getValue(), 1, 1);
+				Date d1 = createDate(firstDate.getValue(), 0, 1);
+				Date d2 = createDate(lastDate.getValue(), 0, 1);
 				
 				afficheRegionMapByDate(txtName.getText(), d1, d2);
 				
@@ -399,7 +399,7 @@ public class Controller implements Initializable {
 		});
 		
 		btnPlay.setOnAction(event ->{
-			animation(getNbIntervalsBetween(createDate(firstDate.getValue(), 1, 1), createDate(lastDate.getValue(), 1, 1), 5), createDate(firstDate.getValue(), 1, 1));
+			animation(getNbIntervalsBetween(createDate(firstDate.getValue(), 0, 1), createDate(lastDate.getValue(), 0, 1), 5), createDate(firstDate.getValue(), 0, 1));
 		});
 	}
 	
@@ -671,7 +671,7 @@ public class Controller implements Initializable {
 	 * @param day le jour de la date
 //	 * @return un objet de type DATE avec les valeurs en paramètres
 	 */
-	public Date createDate(int year, int month, int day) {
+	public static Date createDate(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
         Date date = calendar.getTime();
@@ -686,7 +686,7 @@ public class Controller implements Initializable {
 		ArrayList<Species> tabSpecies = new ArrayList<Species>();
 		
 		try {
-			tabSpecies = dp.getNbReportsByRegionByTimeInterval(txtName.getText(), null, d1, 5, nbIntervals);
+			tabSpecies = dp.getNbReportsByRegionByTimeInterval(txtName.getText(), d1, 5, nbIntervals);
 		} catch (UnknownSpeciesException e) {
 			e.printStackTrace();
 		}

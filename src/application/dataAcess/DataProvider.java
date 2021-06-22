@@ -15,8 +15,8 @@ import application.common.Region;
 import application.common.Species;
 import application.exceptions.UnknownSpeciesException;
 import application.util.JSONHelper;
+import application.util.Point_2D;
 import application.util.URLBuilder;
-import javafx.geometry.Point2D;
 
 public class DataProvider implements DataProviderInterface {
 
@@ -61,12 +61,12 @@ public class DataProvider implements DataProviderInterface {
 				if (!jsonRoot.isNull("error") && jsonRoot.getString("error").equals("NAME_NOT_FOUND"))
 					throw new UnknownSpeciesException();
 				JSONArray listeDesRegions = jsonRoot.getJSONArray("features");
-				System.out.println("nb regions : " + listeDesRegions.length());
+				//System.out.println("nb regions : " + listeDesRegions.length());
 				for (int i = 0; i < listeDesRegions.length(); i++) {
-					ArrayList<Point2D> points = new ArrayList<Point2D>();
+					ArrayList<Point_2D> points = new ArrayList<Point_2D>();
 					JSONArray coords = listeDesRegions.getJSONObject(i).getJSONObject("geometry").getJSONArray("coordinates").getJSONArray(0);
 					for (int j = 0; j < coords.length(); j++) {
-						Point2D p = new Point2D(coords.getJSONArray(j).getDouble(0), coords.getJSONArray(j).getDouble(1));
+						Point_2D p = new Point_2D(coords.getJSONArray(j).getDouble(0), coords.getJSONArray(j).getDouble(1));
 						points.add(p);
 					}
 					int nbReports = listeDesRegions.getJSONObject(i).getJSONObject("properties").getInt("n");
@@ -89,7 +89,7 @@ public class DataProvider implements DataProviderInterface {
 	}
 
 	@Override
-	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, String geoHash, Date from, int intervalDuration, int nbIntervals) throws UnknownSpeciesException {
+	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, Date from, int intervalDuration, int nbIntervals) throws UnknownSpeciesException {
 		ArrayList<Species> species = new ArrayList<Species>();
 		if (scientificName != null && !scientificName.equals("") && from != null) {
 			// Pour chaque interval de temps, on effectue une requête afin de récupérer les signalements
@@ -125,12 +125,6 @@ public class DataProvider implements DataProviderInterface {
 			//e.printStackTrace();
 		}
 		return names;
-	}
-
-	@Override
-	public String GPStoHash(Point2D CoordGPS) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

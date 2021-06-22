@@ -2,19 +2,19 @@ package application.common;
 
 import java.util.ArrayList;
 
-import javafx.geometry.Point2D;
+import application.util.Point_2D;
 
 public class Region {
-	private ArrayList<Point2D> points;
+	private ArrayList<Point_2D> points;
 	private int nbReports;
 	
-	public Region(ArrayList<Point2D> points, int nbReports) {
+	public Region(ArrayList<Point_2D> points, int nbReports) {
 		super();
 		this.points = points;
 		this.nbReports = nbReports;
 	}
 	
-	public ArrayList<Point2D> getPoints() {
+	public ArrayList<Point_2D> getPoints() {
 		return points;
 	}
 	

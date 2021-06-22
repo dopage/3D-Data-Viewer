@@ -5,7 +5,6 @@ import java.util.Date;
 
 import application.common.Species;
 import application.exceptions.UnknownSpeciesException;
-import javafx.geometry.Point2D;
 
 public interface DataProviderInterface {
 	
@@ -30,14 +29,13 @@ public interface DataProviderInterface {
 	/**
 	 * Récupère le nombre de signalements effectués dans chaque région et pour une espèce en particulier pour des intervalles de temps différents
 	 * @param scientificName : le nom scientifique de l'espèce
-	 * @param geoHash : le GeoHash à utiliser
 	 * @param from : la date où débute le premier interval de temps
 	 * @param intervalDuration : la durée en nombre d'années de chaque interval de temps
 	 * @param nbIntervals : le nombre d'intervalles de temps
 	 * @return : une liste d'instances de la classe "species" contenant les signalements de l'espèce à des intervalles de temps différents
 	 * @throws UnknownSpeciesException : une exception peut être lancée si l'espèce n'est pas répertoriée dans la base de données
 	 */
-	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, String geoHash, Date from, int intervalDuration, int nbIntervals) throws UnknownSpeciesException;
+	public ArrayList<Species> getNbReportsByRegionByTimeInterval(String scientificName, Date from, int intervalDuration, int nbIntervals) throws UnknownSpeciesException;
 	
 	/**
 	 * Récupère les premiers noms des espèces commençant par une chaîne de caractères passée en paramètre
@@ -45,9 +43,7 @@ public interface DataProviderInterface {
 	 * @return : la liste des noms d'espèces correspondant
 	 */
 	public ArrayList<String> getScientificNamesBeginWith(String beginWith);
-
-	public String GPStoHash(Point2D CoordGPS);
-
+	
 	/**
 	 * Récupère les enregistrements effectués pour une espèce en particulier
 	 * @param geoHash : le GeoHash à utiliser
