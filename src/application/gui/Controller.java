@@ -46,6 +46,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
@@ -153,6 +154,7 @@ public class Controller implements Initializable {
 	private Group gCourant = new Group();
 	private DataProvider dp = DataProvider.getInstance();
 	private int lastSelectedZoneRequestID = 0;
+	private Species sCurrent;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -326,6 +328,7 @@ public class Controller implements Initializable {
 							afficheRegionMap(s.getScientificName());
 						}
 					}
+					btnHisto.setSelected(false);
 	            }
 	        }
 		});
@@ -379,26 +382,53 @@ public class Controller implements Initializable {
 		
 		// Cr�ation d'un EventListener pour l'int�raction avec le bouton Rechercher
 		btnSearch.setOnAction(event -> {
-			//On vérifie si l'utilsateur a selectionné un interval de temps
-			if(btnPeriod.isSelected()) {
-				Date d1 = createDate(firstDate.getValue(), 0, 1);
-				Date d2 = createDate(lastDate.getValue(), 0, 1);
-				
-				afficheRegionMapByDate(txtName.getText(), d1, d2);
-				
-				//System.out.println(getNbIntervalsBetween(d1,d2,5));
-				
-				btnPlay.setDisable(false);
-				btnStop.setDisable(false);
-				btnPause.setDisable(false);
+			if(btnHisto.isSelected()) {
+				modeHisto();
 			}
 			else {
-				afficheRegionMap(txtName.getText());
+				//On vérifie si l'utilsateur a selectionné un interval de temps
+				if(btnPeriod.isSelected()) {
+					Date d1 = createDate(firstDate.getValue(), 0, 1);
+					Date d2 = createDate(lastDate.getValue(), 0, 1);
+					
+					afficheRegionMapByDate(txtName.getText(), d1, d2);
+					
+					//System.out.println(getNbIntervalsBetween(d1,d2,5));
+					
+					btnPlay.setDisable(false);
+					btnStop.setDisable(false);
+					btnPause.setDisable(false);
+				}
+				else {
+					afficheRegionMap(txtName.getText());
+				}
 			}
+			
 		});
 		
 		btnPlay.setOnAction(event -> {
 			animation(getNbIntervalsBetween(createDate(firstDate.getValue(), 0, 1), createDate(lastDate.getValue(), 0, 1), 5), createDate(firstDate.getValue(), 0, 1));
+		});
+		
+		btnHisto.setOnAction(event -> {
+			if(btnHisto.isSelected()) {
+				modeHisto();
+			}
+			else {
+				if(btnPeriod.isSelected()) {
+					Date d1 = createDate(firstDate.getValue(), 0, 1);
+					Date d2 = createDate(lastDate.getValue(), 0, 1);
+					
+					afficheRegionMapByDate(txtName.getText(), d1, d2);
+					
+					btnPlay.setDisable(false);
+					btnStop.setDisable(false);
+					btnPause.setDisable(false);
+				}
+				else {
+					afficheRegionMap(sCurrent);
+				}
+			}
 		});
 		
 		// On charge le fichier json avec les données de bases
@@ -520,9 +550,9 @@ public class Controller implements Initializable {
 			Pane p = new Pane();
 			p.setPrefWidth(30);
 			p.setPrefHeight(30);
-			int r = 0 + 255 * i/8;
-			int g = 255 - 255 * i/8;
-			int b = 0;
+			int r = 255 - 255 * i/8;
+			int g = 0;
+			int b = 255 * i/8;
 			String hex = String.format("%02X%02X%02X", r, g, b);
 			p.setStyle("-fx-background-color: #" + hex);
 			int rangeMin = min + (max-min)/nbCaptions * i;
@@ -552,9 +582,9 @@ public class Controller implements Initializable {
 	 */
 	public Color getColorforQuadri(int nbCaptions, int min, int max, int val) {
 		for (int i = 0; i < nbCaptions; i++) {
-			float r = 0 + 1 * (float)(i)/8;
-			float g = 1 - 1 * (float)(i)/8;
-			float b = 0;
+			float r = 1 - (float)(i)/8;
+			float g = 0;
+			float b = 1 * (float)i/8;
 			int rangeMin = min + (max-min)/nbCaptions * i;
 			
 			if (i == nbCaptions - 1) {
@@ -564,6 +594,26 @@ public class Controller implements Initializable {
 				int rangeMax = min + (max-min)/nbCaptions * (i+1);
 				if(val >= rangeMin && val < rangeMax) {
 					return new Color(r,g,b, 0.005);
+				}
+			}
+		}
+		return Color.BLUE;
+	}
+	
+	public Color getColorforBox(int nbCaptions, int min, int max, int val) {
+		for (int i = 0; i < nbCaptions; i++) {
+			float r = 1 - (float)(i)/8;
+			float g = 0;
+			float b = 1 * (float)i/8;
+			int rangeMin = min + (max-min)/nbCaptions * i;
+			
+			if (i == nbCaptions - 1) {
+				return new Color(r,g,b, 0.5);
+			}
+			else {	
+				int rangeMax = min + (max-min)/nbCaptions * (i+1);
+				if(val >= rangeMin && val < rangeMax) {
+					return new Color(r,g,b, 0.5);
 				}
 			}
 		}
@@ -590,17 +640,17 @@ public class Controller implements Initializable {
 	public void showRegionsMapFromFile(String path, String scientificName) {
 		try {
 			gCourant.getChildren().clear();
-			Species s = dp.getNbReportsByRegionFromFile(path, scientificName);
+			sCurrent = dp.getNbReportsByRegionFromFile(path, scientificName);
 			
 			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
-			int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
-			drawCaption(s.getMinOccurrence(), averageTop10Perc);
+			int averageTop10Perc = getAverageTop10Pec(sCurrent.getNbReportsByRegion());
+			drawCaption(sCurrent.getMinOccurrence(), averageTop10Perc);
 			
 			// Affichage des zones sur la mapMonde 
-			for(Region r : s.getNbReportsByRegion()){
+			for(Region r : sCurrent.getNbReportsByRegion()){
 				// Transformation des Point2D et point3D
 				final PhongMaterial pm = new PhongMaterial();
-				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
+				pm.setDiffuseColor(getColorforQuadri(8, sCurrent.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
 				
 				Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
 				Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
@@ -619,17 +669,17 @@ public class Controller implements Initializable {
 	public void afficheRegionMap(String nameSpecies) {
 		try {
 			gCourant.getChildren().clear();
-			Species s = dp.getNbReportsByRegion(nameSpecies);
+			sCurrent = dp.getNbReportsByRegion(nameSpecies);
 			
 			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
-			int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
-			drawCaption(s.getMinOccurrence(), averageTop10Perc);
+			int averageTop10Perc = getAverageTop10Pec(sCurrent.getNbReportsByRegion());
+			drawCaption(sCurrent.getMinOccurrence(), averageTop10Perc);
 			
 			// Affichage des zones sur la mapMonde 
-			for(Region r : s.getNbReportsByRegion()){
+			for(Region r : sCurrent.getNbReportsByRegion()){
 				// Transformation des Point2D et point3D
 				final PhongMaterial pm = new PhongMaterial();
-				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
+				pm.setDiffuseColor(getColorforQuadri(8, sCurrent.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
 				
 				Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
 				Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
@@ -649,17 +699,17 @@ public class Controller implements Initializable {
 	public void afficheRegionMapByDate(String nameSpecies, Date from, Date to) {
 		try {
 			gCourant.getChildren().clear();
-			Species s = dp.getNbReportsByRegion(nameSpecies, from, to);
+			sCurrent = dp.getNbReportsByRegion(nameSpecies, from, to);
 			
 			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
-			int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
-			drawCaption(s.getMinOccurrence(), averageTop10Perc);
+			int averageTop10Perc = getAverageTop10Pec(sCurrent.getNbReportsByRegion());
+			drawCaption(sCurrent.getMinOccurrence(), averageTop10Perc);
 			
 			// Affichage des zones sur la mapMonde 
-			for(Region r : s.getNbReportsByRegion()) {
+			for(Region r : sCurrent.getNbReportsByRegion()) {
 				// Transformation des Point2D et point3D
 				final PhongMaterial pm = new PhongMaterial();
-				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
+				pm.setDiffuseColor(getColorforQuadri(8, sCurrent.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
 				
 				Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
 				Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
@@ -762,4 +812,70 @@ public class Controller implements Initializable {
         calendar.setTime(date);
         return calendar.get(Calendar.YEAR);
     }
+	
+	public void modeHisto() {
+		gCourant.getChildren().clear();
+		
+		int averageTop10Perc = getAverageTop10Pec(sCurrent.getNbReportsByRegion());
+		drawCaption(sCurrent.getMinOccurrence(), averageTop10Perc);
+		
+		// Affichage des zones sur la mapMonde 
+		for(Region r : sCurrent.getNbReportsByRegion()){
+			// Couleur de la box
+			final PhongMaterial pm = new PhongMaterial();
+			pm.setDiffuseColor(getColorforBox(8, sCurrent.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
+			
+			// Calcul de la distance p1/p4 et p3/p4
+			float xP1 = (float)r.getPoints().get(0).getX();
+			float xP4 = (float)r.getPoints().get(3).getX();
+			float xP3 = (float)r.getPoints().get(2).getX();
+			float xP2 = (float)r.getPoints().get(1).getX();
+			
+			float yP1 = (float)r.getPoints().get(0).getY();
+			float yP4 = (float)r.getPoints().get(3).getY();
+			float yP3 = (float)r.getPoints().get(2).getY();
+			float yP2 = (float)r.getPoints().get(2).getY();
+			
+			float distanceP1P4 = Distance(xP1, yP1, xP4, yP4); // Valeur distance P1-P4
+			float distanceP4P3 = Distance(xP4, yP4, xP3, yP3); // Valeur distance P4-P3
+			
+			// Calcul du centre du quadrilatère
+			Point2D mP1P4 = new Point2D((xP1+xP4)/2, (yP1+yP4)/2); // Coordonnées du centre du segment P1-P4
+			Point2D mP3P2 = new Point2D((xP3+xP2)/2, (yP3+yP2)/2); // Coordonnées du centre du segment P3-P2
+			
+			Point2D Centre = new Point2D((mP1P4.getX()+mP3P2.getX())/2 , (mP1P4.getY()+mP3P2.getY())/2); // Coordonnées du centre du quadrilatère (P1,P2,P3,P4)
+			
+			// Normalisation des valeurs de la hauteur
+			float size = (float)r.getNbReports()/averageTop10Perc;
+			if(size>1) size=1;
+			
+			// Affichage de la Box associée
+			AddBox(gCourant, (float)Centre.getX(), (float)Centre.getY(), size, distanceP1P4/100, distanceP4P3/100, pm);
+		}
+	}
+	
+	static public float Distance(double x1, double y1, double x2, double y2) {
+        return (float)Math.sqrt(Math.pow((y2 - y1), 2) + Math.pow((x2 - x1),2));
+    }
+	
+	public void AddBox(Group parent, float lon, float lat, float size, float x, float y, PhongMaterial m) {
+		Group g = new Group();
+		Affine a = new Affine();
+		
+		Box box = new Box(x, y, size);
+		
+		Point3D from = CoordConverter.geoCoordTo3dCoord(lat, lon);
+		Point3D to = Point3D.ZERO;
+		Point3D yDir = new Point3D(1, 0, 1);
+		
+		box.setMaterial(m);
+		a.append(lookAt(from, to, yDir));
+		
+		g.getTransforms().setAll(a);
+		g.getChildren().addAll(box);
+		
+		parent.getChildren().addAll(g);
+	}
+	
+	
 }
