@@ -38,52 +38,76 @@ public class DataProvider implements DataProviderInterface {
 	}
 	
 	@Override
+	public Species getNbReportsByRegionFromFile(String path, String scientificName) throws UnknownSpeciesException {
+		if (scientificName != null) {
+			String jsonText = JSONHelper.readJsonFromFile(path);
+			return extractNbReportsByRegionFromJson(jsonText, scientificName);
+		}
+		else
+			throw new UnknownSpeciesException();
+	}
+	
+	@Override
 	public Species getNbReportsByRegion(String scientificName) throws UnknownSpeciesException {
 		return getNbReportsByRegion(scientificName, null, null);
 	}
 	
 	@Override
 	public Species getNbReportsByRegion(String scientificName, Date from, Date to) throws UnknownSpeciesException {
-		Species species = new Species();
-		species.setScientificName(scientificName);
-		int minOccurence = 0;
-		int maxOccurence = 0;
 		URLBuilder url = new URLBuilder("https://api.obis.org/v3/occurrence/grid/" + geohashPrecision + "?");
-		if (scientificName != null && !scientificName.equals("")) {
+		if (scientificName != null) {
 			url.addParameter("scientificname", scientificName);
 			if (from != null && to != null) {
 				DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 				url.addParameter("startdate", formatter.format(from));
 				url.addParameter("&enddate", formatter.format(to));
 			}
-			try {
-				JSONObject jsonRoot = new JSONObject(JSONHelper.readJsonFromUrl(url.getUrl()));
-				if (!jsonRoot.isNull("error") && jsonRoot.getString("error").equals("NAME_NOT_FOUND"))
-					throw new UnknownSpeciesException();
-				JSONArray listeDesRegions = jsonRoot.getJSONArray("features");
-				//System.out.println("nb regions : " + listeDesRegions.length());
-				for (int i = 0; i < listeDesRegions.length(); i++) {
-					ArrayList<Point_2D> points = new ArrayList<Point_2D>();
-					JSONArray coords = listeDesRegions.getJSONObject(i).getJSONObject("geometry").getJSONArray("coordinates").getJSONArray(0);
-					for (int j = 0; j < coords.length(); j++) {
-						Point_2D p = new Point_2D(coords.getJSONArray(j).getDouble(0), coords.getJSONArray(j).getDouble(1));
-						points.add(p);
-					}
-					int nbReports = listeDesRegions.getJSONObject(i).getJSONObject("properties").getInt("n");
-					if (nbReports > maxOccurence)
-						maxOccurence = nbReports;
-					else if (nbReports < minOccurence)
-						minOccurence = nbReports;
-					Region region = new Region(points, nbReports);
-					species.addRegion(region);
+			String jsonText = JSONHelper.readJsonFromUrl(url.getUrl());
+			return extractNbReportsByRegionFromJson(jsonText, scientificName);
+		}
+		else
+			throw new UnknownSpeciesException();
+	}
+	
+	/**
+	 * Extrait les données d'un json au format String et retourne une espèce avec les données du json intégrées
+	 * @param jsonText : les données json
+	 * @param scientificName : le nom scientifique de l'espèce
+	 * @return : l'espèce avec les données inserées dedans
+	 * @throws UnknownSpeciesException : une exception peut être lancée si l'espèce n'est pas répertoriée dans la base de données
+	 */
+	private Species extractNbReportsByRegionFromJson(String jsonText, String scientificName) throws UnknownSpeciesException {
+		Species species = new Species();
+		species.setScientificName(scientificName);
+		int minOccurence = 0;
+		int maxOccurence = 0;
+		try {
+			JSONObject jsonRoot = new JSONObject(jsonText);
+			if (!jsonRoot.isNull("error") && jsonRoot.getString("error").equals("NAME_NOT_FOUND"))
+				throw new UnknownSpeciesException();
+			JSONArray listeDesRegions = jsonRoot.getJSONArray("features");
+			//System.out.println("nb regions : " + listeDesRegions.length());
+			for (int i = 0; i < listeDesRegions.length(); i++) {
+				ArrayList<Point_2D> points = new ArrayList<Point_2D>();
+				JSONArray coords = listeDesRegions.getJSONObject(i).getJSONObject("geometry").getJSONArray("coordinates").getJSONArray(0);
+				for (int j = 0; j < coords.length(); j++) {
+					Point_2D p = new Point_2D(coords.getJSONArray(j).getDouble(0), coords.getJSONArray(j).getDouble(1));
+					points.add(p);
 				}
-				species.setMinOccurrence(minOccurence);
-				species.setMaxOccurrence(maxOccurence);
+				int nbReports = listeDesRegions.getJSONObject(i).getJSONObject("properties").getInt("n");
+				if (nbReports > maxOccurence)
+					maxOccurence = nbReports;
+				else if (nbReports < minOccurence)
+					minOccurence = nbReports;
+				Region region = new Region(points, nbReports);
+				species.addRegion(region);
 			}
-			catch (JSONException e) {
-				System.err.println("Erreur dans le json - getNbReportsByRegion()");
-				//e.printStackTrace();
-			}
+			species.setMinOccurrence(minOccurence);
+			species.setMaxOccurrence(maxOccurence);
+		}
+		catch (JSONException e) {
+			System.err.println("Erreur dans le json - extractNbReportsByRegionFromJson()");
+			//e.printStackTrace();
 		}
 		return species;
 	}

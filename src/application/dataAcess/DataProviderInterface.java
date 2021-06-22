@@ -10,6 +10,15 @@ public interface DataProviderInterface {
 	
 	/**
 	 * Récupère le nombre de signalements effectués dans chaque région et pour une espèce en particulier
+	 * @param path : le chemin d'accès vers le fichier de données
+	 * @param scientificName : le nom scientifique de l'espèce
+	 * @return : une instance de la classe "species" avec la liste des signalements présente dans son attribut "nbReportsByRegion"
+	 * @throws UnknownSpeciesException : une exception peut être lancée si l'espèce n'est pas répertoriée dans la base de données
+	 */
+	public Species getNbReportsByRegionFromFile(String path, String scientificName) throws UnknownSpeciesException;
+	
+	/**
+	 * Récupère le nombre de signalements effectués dans chaque région et pour une espèce en particulier
 	 * @param scientificName : le nom scientifique de l'espèce
 	 * @return : une instance de la classe "species" avec la liste des signalements présente dans son attribut "nbReportsByRegion"
 	 * @throws UnknownSpeciesException : une exception peut être lancée si l'espèce n'est pas répertoriée dans la base de données

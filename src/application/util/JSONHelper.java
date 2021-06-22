@@ -29,7 +29,7 @@ public class JSONHelper {
 	public static String readJsonFromFile(String path)
 	{
 		String json = "";
-		try (Reader reader = new FileReader("data.json")) {
+		try (Reader reader = new FileReader(path)) {
 			BufferedReader rd = new BufferedReader(reader);
 			json = JSONHelper.readAll(rd);
 		}

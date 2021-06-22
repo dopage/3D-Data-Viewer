@@ -397,9 +397,13 @@ public class Controller implements Initializable {
 			}
 		});
 		
-		btnPlay.setOnAction(event ->{
+		btnPlay.setOnAction(event -> {
 			animation(getNbIntervalsBetween(createDate(firstDate.getValue(), 0, 1), createDate(lastDate.getValue(), 0, 1), 5), createDate(firstDate.getValue(), 0, 1));
 		});
+		
+		// On charge le fichier json avec les données de bases
+		showRegionsMapFromFile("data/Delphinidae.json", "Delphinidae");
+		txtName.setText("Delphinidae");
 	}
 	
 	public void setDateVisible() {
@@ -580,6 +584,35 @@ public class Controller implements Initializable {
 			Point3D p4 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
 			
 			AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
+		}
+	}
+	
+	public void showRegionsMapFromFile(String path, String scientificName) {
+		try {
+			gCourant.getChildren().clear();
+			Species s = dp.getNbReportsByRegionFromFile(path, scientificName);
+			
+			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
+			int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
+			drawCaption(s.getMinOccurrence(), averageTop10Perc);
+			
+			// Affichage des zones sur la mapMonde 
+			for(Region r : s.getNbReportsByRegion()){
+				// Transformation des Point2D et point3D
+				final PhongMaterial pm = new PhongMaterial();
+				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
+				
+				Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
+				Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
+				Point3D p3 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
+				Point3D p4 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
+				AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
+			}
+		} catch (UnknownSpeciesException e) {
+			//e.printStackTrace();
+			System.err.println("Erreur dans la requete showRegionsMapFromFile()");
+    		lblUnknownSpecies.setVisible(true);
+			txtName.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
 		}
 	}
 	
