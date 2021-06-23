@@ -94,22 +94,22 @@
                         </Label>
                         <VBox alignment="CENTER" layoutX="284.0" layoutY="89.0" prefHeight="200.0" prefWidth="171.0">
                            <children>
-                              <Label prefHeight="20.0" prefWidth="108.0" text="Nom de l'espèce : " textAlignment="CENTER">
-                                 <font>
-                                    <Font name="Calibri" size="14.0" />
-                                 </font>
-                              </Label>
-                              <TextField fx:id="txtNameInfo" disable="true">
-                                 <VBox.margin>
-                                    <Insets bottom="10.0" />
-                                 </VBox.margin>
-                              </TextField>
                               <Label prefHeight="20.0" prefWidth="109.0" text="Nom scientifique :" textAlignment="CENTER">
                                  <font>
                                     <Font name="Calibri" size="14.0" />
                                  </font>
                               </Label>
                               <TextField fx:id="txtScientificNameInfo" disable="true">
+                                 <VBox.margin>
+                                    <Insets bottom="10.0" />
+                                 </VBox.margin>
+                              </TextField>
+                              <Label prefHeight="20.0" prefWidth="108.0" text="Nom de l'espèce : " textAlignment="CENTER">
+                                 <font>
+                                    <Font name="Calibri" size="14.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="txtNameInfo" disable="true">
                                  <VBox.margin>
                                     <Insets bottom="10.0" />
                                  </VBox.margin>
