@@ -48,7 +48,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.Sphere;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Affine;
 import javafx.scene.control.Label;
@@ -142,6 +141,9 @@ public class Controller implements Initializable {
 	@FXML 
 	private TextField txtZoom;
 	
+	@FXML
+	private Label lblCurrentInterval;
+	
 	// Tous les composants du Pane3D
 	@FXML
 	private Pane pane3D;
@@ -155,6 +157,9 @@ public class Controller implements Initializable {
 	private DataProvider dp = DataProvider.getInstance();
 	private int lastSelectedZoneRequestID = 0;
 	private Species sCurrent;
+	private ArrayList<Species> speciesForAnimation;
+	private boolean anAnimationIsRunning = false;
+	private boolean animationIsPlaying = false;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -241,7 +246,6 @@ public class Controller implements Initializable {
         	pane3D.setPrefWidth(newVal.doubleValue());
         	subScene.setWidth(newVal.doubleValue());
         });
-        
         pane3DContainer.heightProperty().addListener((obs, oldVal, newVal) -> {
         	pane3D.setPrefHeight(newVal.doubleValue());
         	subScene.setHeight(newVal.doubleValue());
@@ -392,23 +396,61 @@ public class Controller implements Initializable {
 			if(btnPeriod.isSelected()) {
 				Date d1 = createDate(firstDate.getValue(), 0, 1);
 				Date d2 = createDate(lastDate.getValue(), 0, 1);
-					
+				
 				afficheRegionMapByDate(txtName.getText(), d1, d2);
-					
+				
 				btnPlay.setDisable(false);
-				btnStop.setDisable(false);
-				btnPause.setDisable(false);
+				btnPause.setDisable(true);
+				btnStop.setDisable(true);
 			}
 			else {
 				afficheRegionMap(txtName.getText());
+				btnPlay.setDisable(true);
+				btnPause.setDisable(true);
+				btnStop.setDisable(true);
 			}
-			
+			anAnimationIsRunning = false;
+			animationIsPlaying = false;
 			if(btnHisto.isSelected()) {
 				modeHisto();
 			}
-			
 		});
 		
+		btnPlay.setOnAction(event -> {
+			if (!animationIsPlaying) {
+				if (anAnimationIsRunning) {
+					animationIsPlaying = true;
+				}
+				else {
+					int nbIntervals = (lastDate.getValue() - firstDate.getValue()) / 5;
+					animation(nbIntervals, createDate(firstDate.getValue(), 0, 1));
+					anAnimationIsRunning = true;
+					animationIsPlaying = true;
+				}
+				btnPlay.setDisable(true);
+				btnStop.setDisable(false);
+				btnPause.setDisable(false);
+			}
+		});
+		
+		btnPause.setOnAction(event -> {
+			if (animationIsPlaying) {
+				btnPlay.setDisable(false);
+				btnStop.setDisable(false);
+				btnPause.setDisable(true);
+				animationIsPlaying = false;
+			}
+		});
+		
+		btnStop.setOnAction(event -> {
+			btnPlay.setDisable(false);
+			btnStop.setDisable(true);
+			btnPause.setDisable(true);
+			gCourant.getChildren().clear();
+			lblCurrentInterval.setText("");
+			animationIsPlaying = false;
+			anAnimationIsRunning = false;
+		});
 		
 		// EventListener du bouton Histogramme
 		btnHisto.setOnAction(event -> {
@@ -416,19 +458,7 @@ public class Controller implements Initializable {
 				modeHisto();
 			}
 			else {
-				if(btnPeriod.isSelected()) {
-					Date d1 = createDate(firstDate.getValue(), 0, 1);
-					Date d2 = createDate(lastDate.getValue(), 0, 1);
-					
-					afficheRegionMapByDate(txtName.getText(), d1, d2);
-					
-					btnPlay.setDisable(false);
-					btnStop.setDisable(false);
-					btnPause.setDisable(false);
-				}
-				else {
-					afficheRegionMap(sCurrent);
-				}
+				afficheRegionMap(sCurrent);
 			}
 		});
 		
@@ -596,7 +626,7 @@ public class Controller implements Initializable {
 				}
 			}
 		}
-		return Color.BLUE;
+		return Color.WHITE;
 	}
 	
 	/**
@@ -624,7 +654,7 @@ public class Controller implements Initializable {
 				}
 			}
 		}
-		return Color.BLUE;
+		return Color.WHITE;
 	}
 	
 	/**
@@ -632,19 +662,26 @@ public class Controller implements Initializable {
 	 * @param s l'instance d'espèce
 	 */
 	public void afficheRegionMap(Species s) {
-		gCourant.getChildren().clear();
-		int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
-		drawCaption(s.getMinOccurrence(), averageTop10Perc);
-		for(Region r : s.getNbReportsByRegion()) {
-			final PhongMaterial pm = new PhongMaterial();
-			pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
+		sCurrent = s;
+		if (btnHisto.isSelected()) {
+			modeHisto();
+		}
+		else {
+			gCourant.getChildren().clear();
+			int averageTop10Perc = getAverageTop10Pec(s.getNbReportsByRegion());
+			drawCaption(s.getMinOccurrence(), averageTop10Perc);
 			
-			Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
-			Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
-			Point3D p3 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
-			Point3D p4 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
-			
-			AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
+			for(Region r : s.getNbReportsByRegion()) {
+				final PhongMaterial pm = new PhongMaterial();
+				pm.setDiffuseColor(getColorforQuadri(8, s.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
+				
+				Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
+				Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
+				Point3D p3 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
+				Point3D p4 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
+				
+				AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
+			}
 		}
 	}
 	
@@ -683,44 +720,36 @@ public class Controller implements Initializable {
 	}
 	
 	/**
-	 * Fonction pour afficher les régions sur la map via le nom d'un espèces
+	 * Fonction pour afficher les régions sur la map
 	 * @param nameSpecies le nom de l'espèce
 	 */
 	public void afficheRegionMap(String nameSpecies) {
-		try {
-			gCourant.getChildren().clear();
-			sCurrent = dp.getNbReportsByRegion(nameSpecies);
-			
-			// Affichage de la légende associée à l'espèce. Cette légende est unique pour chaque espèce, calculée avec le min et la max des occurences de cette dernière.
-			int averageTop10Perc = getAverageTop10Pec(sCurrent.getNbReportsByRegion());
-			drawCaption(sCurrent.getMinOccurrence(), averageTop10Perc);
-			
-			// Affichage des zones sur la mapMonde 
-			for(Region r : sCurrent.getNbReportsByRegion()){
-				// Transformation des Point2D et point3D
-				final PhongMaterial pm = new PhongMaterial();
-				pm.setDiffuseColor(getColorforQuadri(8, sCurrent.getMinOccurrence(), averageTop10Perc, r.getNbReports()));
-				
-				Point3D p1 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(0).getY(), (float)r.getPoints().get(0).getX());
-				Point3D p2 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(1).getY(), (float)r.getPoints().get(1).getX());
-				Point3D p3 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(2).getY(), (float)r.getPoints().get(2).getX());
-				Point3D p4 = CoordConverter.geoCoordTo3dCoord((float)r.getPoints().get(3).getY(), (float)r.getPoints().get(3).getX());
-				
-				AddQuadrilateral(gCourant, p4, p3, p2, p1, pm);
-			}
-		} catch (UnknownSpeciesException e) {
-			//e.printStackTrace();
-			System.err.println("Erreur dans la requete afficheRegionMap()");
-    		lblUnknownSpecies.setVisible(true);
-			txtName.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
-		}
+		gCourant.getChildren().clear();
+		new Thread(new Runnable() {
+		    public void run() {
+		    	try {
+		    		Species s = dp.getNbReportsByRegion(nameSpecies);
+					Runnable command = new Runnable() {
+	    		        @Override
+	    		        public void run() {
+	    		        	afficheRegionMap(s);
+	    		        }
+	    		    };
+	    		    //Permet d'excuter l'actualisation de l'UI dans le thread principal
+	    		    Platform.runLater(command);
+		    	} catch (UnknownSpeciesException e) {
+		    		lblUnknownSpecies.setVisible(true);
+					txtName.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+				}
+		    }
+		}).start();
 	}
 	
 	/**
-	 * Fonction pour afficher les régions sur la map avec un intervalle de date
+	 * Fonction pour afficher les régions sur la map avec un interval de temps
 	 * @param nameSpecies le nom de l'espèce
-	 * @param from 
-	 * @param to
+	 * @param from : date de début
+	 * @param to : date de fin
 	 */
 	public void afficheRegionMapByDate(String nameSpecies, Date from, Date to) {
 		try {
@@ -751,7 +780,6 @@ public class Controller implements Initializable {
 			txtName.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
 		}
 	}
-	
 
 	/**
 	 Permet de calculer la valeur moyenne du top 10% des signalements les plus élevés
@@ -786,6 +814,48 @@ public class Controller implements Initializable {
         return date;
     }
 	
+	// faire un chargement pour avertir l'utilisateur qu'il doit attendre pour avoir ses résultats.
+	
+	public void animation(int nbIntervals, Date from) {
+		DataProvider dp = DataProvider.getInstance();
+		speciesForAnimation = null;
+		
+		new Thread(new Runnable() {
+		    public void run() {
+		    	try {
+		    		// Dans speciesForAnimation on a des instances de la même espèce qui correspondant à des intervalles de temps de 5 ans
+					speciesForAnimation = dp.getNbReportsByRegionByTimeInterval(txtName.getText(), from, 5, nbIntervals);
+					int i = 0;
+					for(Species s : speciesForAnimation) {
+						try {
+							if (anAnimationIsRunning) {
+								while(anAnimationIsRunning && !animationIsPlaying) {
+									Thread.sleep(500);
+								}
+								if (!anAnimationIsRunning)
+									break;
+								String from = String.valueOf(firstDate.getValue() + 5*i);
+								String to = String.valueOf(firstDate.getValue() + 5*(i+1));
+								Platform.runLater(() -> {
+									afficheRegionMap(s);
+									lblCurrentInterval.setText(from + "-" + to);
+								});
+								Thread.sleep(2000);
+							}
+							else
+								break;
+						} catch (InterruptedException e) {
+		    				e.printStackTrace();
+		    			}
+						i++;
+		    		}
+		    	} catch (UnknownSpeciesException e) {
+					e.printStackTrace();
+				}
+		    }
+		}).start();
+	}
+	
 	/**
 	 * Fonction qui retourne le nombre d'intervalle d'une durée 'pas' entre deux dates d1 et d2 
 	 * @param d1 la date de début
@@ -808,9 +878,6 @@ public class Controller implements Initializable {
         return calendar.get(Calendar.YEAR);
     }
 	
-	/**
-	 * Fonction pour passer au mode Histogramme
-	 */
 	public void modeHisto() {
 		gCourant.getChildren().clear();
 		
@@ -892,6 +959,4 @@ public class Controller implements Initializable {
 		
 		parent.getChildren().addAll(g);
 	}
-	
-	
 }

@@ -37,13 +37,11 @@ class AppTest {
 	void getNbReportsByRegionFromFileTest() {
 		// Test la lecture de données depuis une source local
 		DataProvider dp = DataProvider.getInstance();
-		// Test détection d'une espèce inconnue
-		boolean espece_inconnue = false;
 		try {
 			Species s = dp.getNbReportsByRegionFromFile("data/Selachii.json", "Selachii");
 			assertEquals(4511, s.getNbReportsByRegion().size());
 		} catch (UnknownSpeciesException e) {
-			espece_inconnue = true;
+			e.printStackTrace();
 		}
 	}
 	
