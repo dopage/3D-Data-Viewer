@@ -10,17 +10,15 @@ Polytech Paris-Saclay | 2020-2021
 ***
 ## About
 
-The goal of this project is to allow the visualization of data from an external API in a 3D representation on the surface of the earth.<br>
-The API used is a public database called OBIS which contains the list of all the reports of marine species for several years.<br>
-We have created a graphical interface to search, select, compare, filter and learn about these species.
+The goal of this project is to allow the visualization of data from an external API in a 3D representation on the surface of the earth. The API used is a public database called OBIS which contains the list of all the reports of marine species for several years. We have created a graphical interface to search, select, compare, filter and learn about these species.
 
 ## Technologies & Dependencies
 
 - Java (JRE11) : Programming language used.
 - JavaFX (v16) : A framework to create a graphical interface for desktop applications.
- 1. ControlsFX : ControlsFX is a library of UI controls and useful API.
- 2. ObjModelImporterJFX.jar : Enable JavaFX applications to access 3D models and scenes provided in files based on widely supported 3D formats.
- 3. JSON-20210307.jar : To read JSON file.
+- ControlsFX : ControlsFX is a library of UI controls and useful API.
+- ObjModelImporterJFX.jar : Enable JavaFX applications to access 3D models and scenes provided in files based on widely supported 3D formats.
+- JSON-20210307.jar : To read JSON file.
 
 ## Features & Explanations
 
